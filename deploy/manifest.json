@@ -1,1 +1,35 @@
-{}
+{
+  "name": "Feri",
+
+  "description": "Connect to Feri and reload a web page when files change.",
+
+  "background": {
+    "scripts": [
+      "js/background.js"
+    ],
+    "persistent": true
+  },
+
+  "icons": {
+    "16": "images/icon-16.png",
+    "24": "images/icon-24.png",
+    "32": "images/icon-32.png",
+    "48": "images/icon-48.png",
+    "128": "images/icon-128.png"
+  },
+
+  "manifest_version": 2,
+
+  "minimum_chrome_version": "75",
+
+  "browser_action": {
+    "default_title": "Feri",
+    "default_popup": "popup.html"
+  },
+
+  "permissions": [
+    "storage"
+  ],
+
+  "version": "0.0.0"
+}
