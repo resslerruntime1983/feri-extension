@@ -12,10 +12,11 @@ Use `load unpacked` and select `deploy` as the extension folder.
 
 ### Develop with Firefox
 
-...
+Navigate to `about:debugging` and enable `add-on debugging`.
+
+Use `load temporary add-on` and select the `manifest.json` file within the `deploy` folder.
 
 ## Deploy
-
 
 ### Deploy for Chrome
 
@@ -31,8 +32,13 @@ Thanks to [Font Awesome](https://fontawesome.com/license) for providing the icon
 
 ## Support
 
-...
+Help [support this project](https://www.patreon.com/nightmode) on Patreon. Help me caretake and craft new software, videos, and interactive art. All for as little as $1 a month.
+
+In addition to Patreon, here are some other ways you can help this project.
+
+* [Report any issues](https://github.com/nightmode/feri-extension/issues) on GitHub.
+* Language Translations
 
 ## License
 
-MIT © [Kai Nightmode](https://forestmist.org)
+MIT © [Kai Nightmode](https://twitter.com/kai_nightmode)
