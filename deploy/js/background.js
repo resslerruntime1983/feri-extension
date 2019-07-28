@@ -116,6 +116,7 @@ async function connect() {
             // any files built?
             if (data.hasOwnProperty('files')) {
                 if (Array.isArray(data.files)) {
+                    console.log('sock.onmessage -> reload')
                     reload()
                 }
             }
@@ -303,9 +304,6 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
                 'windowID': windowID
             })
             break
-        // case 'reload':
-        //     reload()
-        //     break
         default:
             console.log('chrome.runtime.onMessage -> unrecognized action "' + request.action + '"')
             sendResponse('ok')
