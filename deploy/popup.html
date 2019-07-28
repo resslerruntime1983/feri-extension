@@ -6,19 +6,56 @@
 </head>
 <body>
 
-    <button id="extension_on">
-        On
-    </button>
+    <div id="content_area">
+        <h1>Feri</h1>
 
-    <button id="extension_off">
-        Off
-    </button>
+        <p id="display_status">
+            <!-- will be set by javascript -->
+            ...
+        </p>
 
-    <!--
-    <button id="reload">
-        Reload
-    </button>
-    -->
+        <hr>
+
+        <section id="button_area">
+            <button id="button_connect">
+                <img src="/image/button-connect.svg" alt="Connect" title="Connect">
+            </button>
+
+            <button id="button_disconnect">
+                <img src="/image/button-disconnect.svg" alt="Disconnect" title="Disconnect">
+            </button>
+
+            <button id="button_reconnect">
+                <img src="/image/button-connect.svg" alt="Reconnect" title="Reconnect">
+            </button>
+
+            <button id="button_save">
+                <img src="/image/button-save.svg" alt="Save" title="Save">
+            </button>
+
+            <button id="button_config">
+                <img src="/image/button-config.svg" alt="Config" title="Config">
+            </button>
+        </section>
+
+        <section id="config_area">
+            <hr>
+
+            <label for="input_server">Extension Server</label>
+            <input id="input_server" type="text" placeholder="local.test">
+
+            <label for="input_port">Port</label>
+            <input id="input_port" type="number" min="1" max="65535" placeholder="4000">
+        </section>
+
+        <div id="display_error">
+            <!-- can be set by javascript -->
+        </div>
+
+        <p id="display_associate">
+            <!-- can be set by javascript -->
+        </p>
+    </div><!-- content_area -->
 
     <script src="js/popup.js"></script>
 

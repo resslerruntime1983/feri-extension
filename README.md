@@ -25,7 +25,11 @@ Everything in the `deploy` directory should be zipped and then uploaded via the 
 
 ...
 
-## Contribute
+## Thanks
+
+Thanks to [Font Awesome](https://fontawesome.com/license) for providing the icons used for this project. Icons were modified slightly during development so you may wish to refer to the [original icons](https://fontawesome.com/icons?d=gallery) for your own use.
+
+## Support
 
 ...
 

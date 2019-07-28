@@ -11,16 +11,16 @@
   },
 
   "icons": {
-    "16": "images/icon-16.png",
-    "24": "images/icon-24.png",
-    "32": "images/icon-32.png",
-    "48": "images/icon-48.png",
-    "128": "images/icon-128.png"
+    "16": "image/icon/icon-gray-16.png",
+    "24": "image/icon/icon-gray-24.png",
+    "32": "image/icon/icon-gray-32.png",
+    "48": "image/icon/icon-gray-48.png",
+    "128": "image/icon/icon-gray-128.png"
   },
 
   "manifest_version": 2,
 
-  "minimum_chrome_version": "75",
+  "minimum_chrome_version": "76",
 
   "browser_action": {
     "default_title": "Feri",
@@ -28,7 +28,8 @@
   },
 
   "permissions": [
-    "storage"
+    "storage",
+    "tabs"
   ],
 
   "version": "0.0.0"
