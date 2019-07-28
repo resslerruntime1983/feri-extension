@@ -1,15 +1,12 @@
 {
-  "name": "Feri",
-
-  "description": "Connect to Feri and reload a web page when files change.",
-
+  "name": "__MSG_extensionName__",
+  "description": "__MSG_extensionDescription__",
   "background": {
     "scripts": [
       "js/background.js"
     ],
     "persistent": true
   },
-
   "icons": {
     "16": "image/icon/icon-gray-16.png",
     "24": "image/icon/icon-gray-24.png",
@@ -17,20 +14,16 @@
     "48": "image/icon/icon-gray-48.png",
     "128": "image/icon/icon-gray-128.png"
   },
-
   "manifest_version": 2,
-
   "minimum_chrome_version": "76",
-
   "browser_action": {
-    "default_title": "Feri",
+    "default_title": "__MSG_extensionName__",
     "default_popup": "popup.html"
   },
-
   "permissions": [
     "storage",
     "tabs"
   ],
-
+  "default_locale": "en",
   "version": "0.0.0"
 }

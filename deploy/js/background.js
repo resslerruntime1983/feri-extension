@@ -55,7 +55,7 @@ function connectionError() {
         // do nothing
     })
 
-    setBadge('error')
+    setBadge(chrome.i18n.getMessage('error'))
     setIcon('pink')
 } // connectionError
 
@@ -90,7 +90,7 @@ async function connect() {
                 // do nothing
             })
 
-            setBadge('on')
+            setBadge(chrome.i18n.getMessage('on'))
             setIcon('blue')
         }
 
@@ -159,10 +159,7 @@ function disconnect() {
         }
     }
 
-    console.log('about to setBadge')
     setBadge()
-
-    console.log('about to setIcon')
     setIcon()
 } // disconnect
 
@@ -188,7 +185,7 @@ function lostConnection() {
         // do nothing
     })
 
-    setBadge('lost')
+    setBadge(chrome.i18n.getMessage('lost'))
     setIcon()
 } // lostConnection
 

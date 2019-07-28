@@ -1,0 +1,66 @@
+{
+    "config": {
+        "message": "Config.",
+        "description": "Status message seen after clicking the config button."
+    },
+    "configSaved": {
+        "message": "Config saved.",
+        "description": "Status message seen briefly after clicking the save config button."
+    },
+    "connected": {
+        "message": "Connected.",
+        "description": "Status message seen after a succesful connection."
+    },
+    "connecting": {
+        "message": "Connecting.",
+        "description": "Status message that can be seen if a connection is taking a long time to connect."
+    },
+    "connectionError": {
+        "message": "Connection error.",
+        "description": "Status message seen after a failed connection attempt."
+    },
+    "connectionHelp": {
+        "message": "Make sure a Feri extension server is running on [server] port [port].",
+        "description": "Help text displayed when a connection can not be made. The strings [server] and [port] will be replaced by appropriate values when displayed."
+    },
+    "connectionHelpContinued": {
+        "message": "The extension server, extension client, web browser, and any networking involved may need to be modified.",
+        "description": "Additional help text displayed when a connection an not be made."
+    },
+    "disconnected": {
+        "message": "Disconnected.",
+        "description": "Status message seen by default, after saving options, and after disconnecting."
+    },
+    "error": {
+        "message": "error",
+        "description": "Badge text seen when there has been a connection error."
+    },
+    "extensionDescription": {
+        "message": "Connect to Feri and reload a web page when files change.",
+        "description": "Summary of what this extension does."
+    },
+    "extensionName": {
+        "message": "Feri",
+        "description": "The name of this extension."
+    },
+    "lost": {
+        "message": "lost",
+        "description": "Badge text seen when an active connection has been lost."
+    },
+    "lostConnection": {
+        "message": "Lost connection.",
+        "description": "Status message seen after losing a connection."
+    },
+    "notAssociated": {
+        "message": "Feri is not associated with this browser tab.",
+        "description": "Message shown if the extension is connected and the user is activating the extension in a tab that is not set to reload when notified by the extension server."
+    },
+    "notAssociatedLinks": {
+        "message": "<a id=\"associate_here\">Associate with this tab</a> or <a id=\"associate_return\">return to the associated tab</a>.",
+        "description": "Links shown if the extension is connected and the user is activating the extension in a tab that is not set to reload when notified by the extension server."
+    },
+    "on": {
+        "message": "on",
+        "description": "Badge text seen when there is an active connection."
+    }
+}

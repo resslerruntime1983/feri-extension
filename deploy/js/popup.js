@@ -38,7 +38,7 @@ function checkStatus() {
 function setStatus(obj) {
     switch(obj.action) {
         case 'set_status_connected':
-            displayStatus.innerText = 'Connected.'
+            displayStatus.innerText = chrome.i18n.getMessage('connected')
 
             buttonConnect.style.display = 'none'
             buttonDisconnect.style.display = 'inline-block'
@@ -51,7 +51,7 @@ function setStatus(obj) {
             displayAssociate.innerText = ''
 
             if (tabID !== obj.browserTabID) {
-                display_associate.innerHTML = '<p>Feri is not associated with this browser tab.</p><p><a id="associate_here">Associate with this tab</a> or <a id="associate_return">return to the associated tab</a>.</p>'
+                display_associate.innerHTML = '<p>' + chrome.i18n.getMessage('notAssociated') + '</p><p>' + chrome.i18n.getMessage('notAssociatedLinks') + '</p>'
 
                 document.getElementById('associate_here').addEventListener('click', function(e) {
                     e.preventDefault()
@@ -79,7 +79,7 @@ function setStatus(obj) {
 
             break
         case 'set_status_disconnected':
-            displayStatus.innerText = 'Disconnected.'
+            displayStatus.innerText = chrome.i18n.getMessage('disconnected')
 
             buttonConnect.style.display = 'inline-block'
             buttonDisconnect.style.display = 'none'
@@ -93,7 +93,7 @@ function setStatus(obj) {
 
             break
         case 'set_status_lost_connection':
-            displayStatus.innerText = 'Lost connection.'
+            displayStatus.innerText = chrome.i18n.getMessage('lostConnection')
 
             buttonConnect.style.display = 'none'
             buttonDisconnect.style.display = 'none'
@@ -107,7 +107,7 @@ function setStatus(obj) {
 
             break
         case 'set_status_connection_error':
-            displayStatus.innerText = 'Connection error.'
+            displayStatus.innerText = chrome.i18n.getMessage('connectionError')
 
             buttonConnect.style.display = 'inline-block'
             buttonDisconnect.style.display = 'none'
@@ -118,7 +118,7 @@ function setStatus(obj) {
             config_area.style.display = 'none'
 
             display_error.style.display = 'block'
-            display_error.innerHTML = '<p>Make sure a Feri extension server is running on ' + server + ' port ' + port + '.</p>' + '<p>The extension server, extension client, web browser, and any networking between may need to be modified.</p>'
+            display_error.innerHTML = '<p>' + chrome.i18n.getMessage('connectionHelp').replace('[server]', server).replace('[port]', port) + '</p><p>' + chrome.i18n.getMessage('connectionHelpContinued') + '</p>'
 
             displayAssociate.style.display = 'none'
             displayAssociate.innerText = ''
@@ -157,7 +157,7 @@ buttonConnect.addEventListener('click', function(e) {
 
     buttonConnect.blur()
 
-    displayStatus.innerText = 'Connecting.'
+    displayStatus.innerText = chrome.i18n.getMessage('connecting')
 
     chrome.runtime.sendMessage({ action: 'extension_on', currentTabID: tabID, currentWindowID: windowID }, function(response) {
         console.log(response)
@@ -181,7 +181,7 @@ buttonReconnect.addEventListener('click', function(e) {
 
     buttonReconnect.blur()
 
-    displayStatus.innerText = 'Connecting.'
+    displayStatus.innerText = chrome.i18n.getMessage('connecting')
 
     chrome.runtime.sendMessage({ action: 'extension_on', currentTabID: tabID, currentWindowID: windowID }, function(response) {
         console.log(response)
@@ -191,8 +191,6 @@ buttonReconnect.addEventListener('click', function(e) {
 // config button
 buttonConfig.addEventListener('click', async function(e) {
     clearError()
-
-    // buttonConfig.blur()
 
     if (inputServer.placeholder !== server) {
         inputServer.value = server
@@ -213,7 +211,7 @@ buttonConfig.addEventListener('click', async function(e) {
 
     chrome.runtime.sendMessage({ action: 'extension_off' }, function(response) {
         console.log(response)
-        displayStatus.innerText = 'Config.'
+        displayStatus.innerText = chrome.i18n.getMessage('config')
     })
 })
 
@@ -221,9 +219,7 @@ buttonConfig.addEventListener('click', async function(e) {
 buttonSave.addEventListener('click', function(e) {
     clearError()
 
-    // buttonSave.blur()
-
-    displayStatus.innerText = 'Config saved.'
+    displayStatus.innerText = chrome.i18n.getMessage('configSaved')
 
     configArea.style.display = 'none'
 
