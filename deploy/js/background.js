@@ -345,6 +345,14 @@ async function partyTime() {
             })
         }
     }, 1000)
+
+    chrome.tabs.onUpdated.addListener(function(tabID, changeInfo, tab) {
+        if (tabID === browserTabID) {
+            // re-set the colorful icon for the feri associated tab
+            console.log('tabs.onUpdated -> colorful icon re-set')
+            setIcon(lastIconCustomColor, browserTabID)
+        }
+    })
 }
 
 partyTime()
