@@ -118,7 +118,7 @@ function setStatus(obj) {
             config_area.style.display = 'none'
 
             display_error.style.display = 'block'
-            display_error.innerHTML = '<p>Make sure a Feri extension server is running on ' + server + ' port ' + port + '.</p>' + '<p>The extension server, this client, and any networking between may need to be modified.</p>'
+            display_error.innerHTML = '<p>Make sure a Feri extension server is running on ' + server + ' port ' + port + '.</p>' + '<p>The extension server, extension client, web browser, and any networking between may need to be modified.</p>'
 
             displayAssociate.style.display = 'none'
             displayAssociate.innerText = ''

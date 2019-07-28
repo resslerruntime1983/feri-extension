@@ -48,6 +48,17 @@ function checkConnection() {
     }
 } // checkConnection
 
+function connectionError() {
+    status = 'set_status_connection_error'
+
+    chrome.runtime.sendMessage({ action: status, browserTabID: browserTabID }, function(response) {
+        // do nothing
+    })
+
+    setBadge('error')
+    setIcon('pink')
+} // connectionError
+
 async function connect() {
     // try to disconnect first
     disconnect()
@@ -56,81 +67,80 @@ async function connect() {
     server = await storageGet('server') || server
     port = await storageGet('port') || port
 
-    sock = new WebSocket('ws://' + server + ':' + port)
+    try {
+        sock = new WebSocket('ws://' + server + ':' + port)
 
-    // on error
-    sock.onerror = function (event) {
-        troubleshoot.sockError = event
+        // on error
+        sock.onerror = function (event) {
+            troubleshoot.sockError = event
 
-        status = 'set_status_connection_error'
-
-        chrome.runtime.sendMessage({ action: status, browserTabID: browserTabID }, function(response) {
-            // do nothing
-        })
-
-        setBadge('error')
-        setIcon('pink')
-    }
-
-    // one time event
-    sock.onopen = function (event) {
-        // check connection every 10 seconds
-        pingTimer = setInterval(checkConnection, 10000)
-
-        chrome.tabs.onRemoved.addListener(tabRemoved)
-
-        status = 'set_status_connected'
-
-        chrome.runtime.sendMessage({ action: status, browserTabID: browserTabID }, function(response) {
-            // do nothing
-        })
-
-        setBadge('on')
-        setIcon('blue')
-    }
-
-    // every message
-    sock.onmessage = function (event) {
-        let data = event.data
-
-        try {
-            data = JSON.parse(data)
-        } catch(e) {
-            // do nothing
+            connectionError()
         }
 
-        // check and optionally set the defaultDocument
-        if (data.hasOwnProperty('defaultDocument')) {
-            if (typeof data.defaultDocument === 'string') {
-                if (data.defaultDocument.trim().length >= 3) {
-                    defaultDocument = data.defaultDocument.trim()
+        // one time event
+        sock.onopen = function (event) {
+            // check connection every 10 seconds
+            pingTimer = setInterval(checkConnection, 10000)
+
+            chrome.tabs.onRemoved.addListener(tabRemoved)
+
+            status = 'set_status_connected'
+
+            chrome.runtime.sendMessage({ action: status, browserTabID: browserTabID }, function(response) {
+                // do nothing
+            })
+
+            setBadge('on')
+            setIcon('blue')
+        }
+
+        // every message
+        sock.onmessage = function (event) {
+            let data = event.data
+
+            try {
+                data = JSON.parse(data)
+            } catch(e) {
+                // do nothing
+            }
+
+            // check and optionally set the defaultDocument
+            if (data.hasOwnProperty('defaultDocument')) {
+                if (typeof data.defaultDocument === 'string') {
+                    if (data.defaultDocument.trim().length >= 3) {
+                        defaultDocument = data.defaultDocument.trim()
+                    }
                 }
             }
-        }
 
-        // any files built?
-        if (data.hasOwnProperty('files')) {
-            if (Array.isArray(data.files)) {
-                reload()
+            // any files built?
+            if (data.hasOwnProperty('files')) {
+                if (Array.isArray(data.files)) {
+                    reload()
+                }
             }
-        }
 
-        troubleshoot.data = data
+            troubleshoot.data = data
 
-        if (data === 'ping' || data === 'pong') {
-            if (data === 'ping') {
-                // the server wants to know if we are still connected
-                sock.send("pong")
+            if (data === 'ping' || data === 'pong') {
+                if (data === 'ping') {
+                    // the server wants to know if we are still connected
+                    sock.send("pong")
+                } else {
+                    // the server responded with 'pong'
+                    pingAttempt = 0 // reset to 0
+                }
             } else {
-                // the server responded with 'pong'
-                pingAttempt = 0 // reset to 0
+                console.log('sock.onmessage ->', data)
             }
-        } else {
-            console.log('sock.onmessage ->', data)
-        }
 
-        return Promise.resolve()
-    } // sock.onmessage
+            return Promise.resolve()
+        } // sock.onmessage
+    } catch(err) {
+        connectionError()
+    }
+
+
 } // connect
 
 function disconnect() {
@@ -321,6 +331,9 @@ async function partyTime() {
     setInterval(function() {
         let previousTheme = theme
         theme = (matchMediaDark.matches) ? 'dark' : 'light'
+
+        // Chrome on mac will report light/dark preferences in real time
+        // Firefox on mac will not notice a preference change until Firefox is restarted
 
         if (previousTheme !== theme) {
             // loop through all tabs and fix icons
