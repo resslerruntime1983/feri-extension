@@ -12,7 +12,7 @@
         "description": "Status message seen after a succesful connection."
     },
     "connecting": {
-        "message": "Connecting.",
+        "message": "Connecting...",
         "description": "Status message that can be seen if a connection is taking a long time to connect."
     },
     "connectionError": {
