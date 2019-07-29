@@ -3,6 +3,7 @@
   "description": "__MSG_extensionDescription__",
   "background": {
     "scripts": [
+      "js/browser-polyfill.js",
       "js/background.js"
     ],
     "persistent": true

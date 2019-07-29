@@ -24,90 +24,84 @@ let windowID = 0 // will be set to the current window ID
 //-----------
 // Functions
 //-----------
+function clearAssociate() {
+    displayAssociate.style.display = 'none'
+    displayAssociate.innerText = ''
+} // clearAssociate
+
 function clearError() {
+    displayError.style.display = 'none'
     displayError.innerHTML = ''
 } // clearError
 
-function checkStatus() {
-    chrome.runtime.sendMessage({ action: 'status' }, function(response) {
-        // do nothing
-        setStatus(response)
-    })
+async function checkStatus() {
+    let response = await browser.runtime.sendMessage({ action: 'status' })
+    setStatus(response)
 } // checkStatus
 
 function setStatus(obj) {
     switch(obj.action) {
         case 'set_status_connected':
-            displayStatus.innerText = chrome.i18n.getMessage('connected')
+            displayStatus.innerText = browser.i18n.getMessage('connected')
 
             buttonConnect.style.display = 'none'
             buttonDisconnect.style.display = 'inline-block'
             buttonReconnect.style.display = 'none'
 
-            display_error.style.display = 'none'
-            display_error.innerText = ''
-
-            displayAssociate.style.display = 'none'
-            displayAssociate.innerText = ''
+            clearError()
+            clearAssociate()
 
             if (tabID !== obj.browserTabID) {
-                display_associate.innerHTML = '<p>' + chrome.i18n.getMessage('notAssociated') + '</p><p>' + chrome.i18n.getMessage('notAssociatedLinks') + '</p>'
+                displayAssociate.innerHTML = '<p>' + browser.i18n.getMessage('notAssociated') + '</p><p>' + browser.i18n.getMessage('notAssociatedLinks') + '</p>'
 
-                document.getElementById('associate_here').addEventListener('click', function(e) {
+                document.getElementById('associate_here').addEventListener('click', async function(e) {
                     e.preventDefault()
 
-                    chrome.windows.getCurrent(function(win) {
-                        let currentWindowID = win.id
+                    let win = await browser.windows.getCurrent()
+                    let currentWindowID = win.id
 
-                        // send message to background.js to set the active tab id to currentTabID and update the icons, yadda yadda
-                        chrome.runtime.sendMessage({ action: 'associate_tab', currentTabID: tabID, currentWindowID: currentWindowID }, function(response) {
-                            console.log(response)
-                            window.close()
-                        })
-                    })
+                    // send message to background.js to set the active tab id to currentTabID and update the icons, yadda yadda
+                    let response = await browser.runtime.sendMessage({ action: 'associate_tab', currentTabID: tabID, currentWindowID: currentWindowID })
+
+                    console.log(response)
+                    window.close()
                 })
 
                 document.getElementById('associate_return').addEventListener('click', function(e) {
                     e.preventDefault()
-                    chrome.windows.update(obj.windowID, { focused: true })
-                    chrome.tabs.update(obj.browserTabID, { active: true })
+                    browser.windows.update(obj.windowID, { focused: true })
+                    browser.tabs.update(obj.browserTabID, { active: true })
                     window.close()
                 })
 
-                display_associate.style.display = 'block'
+                displayAssociate.style.display = 'block'
             }
 
             break
         case 'set_status_disconnected':
-            displayStatus.innerText = chrome.i18n.getMessage('disconnected')
+            displayStatus.innerText = browser.i18n.getMessage('disconnected')
 
             buttonConnect.style.display = 'inline-block'
             buttonDisconnect.style.display = 'none'
             buttonReconnect.style.display = 'none'
 
-            display_error.style.display = 'none'
-            display_error.innerText = ''
-
-            displayAssociate.style.display = 'none'
-            displayAssociate.innerText = ''
+            clearError()
+            clearAssociate()
 
             break
         case 'set_status_lost_connection':
-            displayStatus.innerText = chrome.i18n.getMessage('lostConnection')
+            displayStatus.innerText = browser.i18n.getMessage('lostConnection')
 
             buttonConnect.style.display = 'none'
             buttonDisconnect.style.display = 'none'
             buttonReconnect.style.display = 'inline-block'
 
-            display_error.style.display = 'none'
-            display_error.innerText = ''
-
-            displayAssociate.style.display = 'none'
-            displayAssociate.innerText = ''
+            clearError()
+            clearAssociate()
 
             break
         case 'set_status_connection_error':
-            displayStatus.innerText = chrome.i18n.getMessage('connectionError')
+            displayStatus.innerText = browser.i18n.getMessage('connectionError')
 
             buttonConnect.style.display = 'inline-block'
             buttonDisconnect.style.display = 'none'
@@ -117,11 +111,10 @@ function setStatus(obj) {
 
             config_area.style.display = 'none'
 
-            display_error.style.display = 'block'
-            display_error.innerHTML = '<p>' + chrome.i18n.getMessage('connectionHelp').replace('[server]', server).replace('[port]', port) + '</p><p>' + chrome.i18n.getMessage('connectionHelpContinued') + '</p>'
+            displayError.style.display = 'block'
+            displayError.innerHTML = '<p>' + browser.i18n.getMessage('connectionHelp').replace('[server]', server).replace('[port]', port) + '</p><p>' + browser.i18n.getMessage('connectionHelpContinued') + '</p>'
 
-            displayAssociate.style.display = 'none'
-            displayAssociate.innerText = ''
+            clearAssociate()
 
             break
         default:
@@ -130,21 +123,14 @@ function setStatus(obj) {
 } // status
 
 async function storageGet(key) {
-    return await new Promise(function(resolve, reject) {
-        chrome.storage.local.get(key, function(obj) {
-            // obj can be an empty object
-            // obj will never be undefined according to https://developer.chrome.com/apps/storage#method-StorageArea-get
-            resolve(obj[key]) // this however, can be undefined
-        })
-    })
+    let obj = await browser.storage.local.get(key)
+    // obj can be an empty object {}
+    // obj will never be undefined
+    return obj[key] // an object key however, can be undefined
 } // storageGet
 
 async function storageSet(obj) {
-    await new Promise(function(resolve, reject) {
-        chrome.storage.local.set(obj, function() {
-            resolve()
-        })
-    })
+    await browser.storage.local.set(obj)
 } // storageSet
 
 //---------
@@ -152,40 +138,46 @@ async function storageSet(obj) {
 //---------
 
 // connect button
-buttonConnect.addEventListener('click', function(e) {
+buttonConnect.addEventListener('click', async function(e) {
     clearError()
 
     buttonConnect.blur()
 
-    displayStatus.innerText = chrome.i18n.getMessage('connecting')
+    displayStatus.innerText = browser.i18n.getMessage('connecting')
 
-    chrome.runtime.sendMessage({ action: 'extension_on', currentTabID: tabID, currentWindowID: windowID }, function(response) {
-        console.log(response)
-    })
+    buttonConnect.style.display = 'none'
+    buttonDisconnect.style.display = 'inline-block'
+
+    let response = await browser.runtime.sendMessage({ action: 'extension_on', currentTabID: tabID, currentWindowID: windowID })
+
+    console.log(response)
 })
 
 // disconnect button
-buttonDisconnect.addEventListener('click', function(e) {
+buttonDisconnect.addEventListener('click', async function(e) {
     clearError()
 
     buttonDisconnect.blur()
 
-    chrome.runtime.sendMessage({ action: 'extension_off' }, function(response) {
-        console.log(response)
-    })
+    let response = await browser.runtime.sendMessage({ action: 'extension_off' })
+
+    console.log(response)
 })
 
 // reconnect button
-buttonReconnect.addEventListener('click', function(e) {
+buttonReconnect.addEventListener('click', async function(e) {
     clearError()
 
     buttonReconnect.blur()
 
-    displayStatus.innerText = chrome.i18n.getMessage('connecting')
+    displayStatus.innerText = browser.i18n.getMessage('connecting')
 
-    chrome.runtime.sendMessage({ action: 'extension_on', currentTabID: tabID, currentWindowID: windowID }, function(response) {
-        console.log(response)
-    })
+    buttonReconnect.style.display = 'none'
+    buttonDisconnect.style.display = 'inline-block'
+
+    let response = await browser.runtime.sendMessage({ action: 'extension_on', currentTabID: tabID, currentWindowID: windowID })
+
+    console.log(response)
 })
 
 // config button
@@ -209,26 +201,23 @@ buttonConfig.addEventListener('click', async function(e) {
     buttonConfig.style.display = 'none'
     buttonSave.style.display = 'inline-block'
 
-    chrome.runtime.sendMessage({ action: 'extension_off' }, function(response) {
-        console.log(response)
-        displayStatus.innerText = chrome.i18n.getMessage('config')
-    })
+    let response = await browser.runtime.sendMessage({ action: 'extension_off' })
+
+    console.log(response)
+
+    displayStatus.innerText = browser.i18n.getMessage('config')
 })
 
 // save button
 buttonSave.addEventListener('click', function(e) {
     clearError()
 
-    displayStatus.innerText = chrome.i18n.getMessage('configSaved')
+    displayStatus.innerText = browser.i18n.getMessage('configSaved')
 
     configArea.style.display = 'none'
 
     buttonConfig.style.display = 'inline-block'
     buttonSave.style.display = 'none'
-
-    setTimeout(function() {
-        checkStatus()
-    }, 1250)
 })
 
 //---------------
@@ -266,31 +255,37 @@ inputPort.addEventListener('keydown', function(e) {
 //-------------------
 // Incoming Messages
 //-------------------
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    console.log('chrome.runtime.onMessage -> ', request)
+browser.runtime.onMessage.addListener(function(request, sender) {
+    console.log('browser.runtime.onMessage -> ', request)
 
     setStatus(request)
 
-    sendResponse('ok')
+    return Promise.resolve('ok')
 })
 
 //------------
 // Party Time
 //------------
 async function partyTime() {
+    chrome.windows.onFocusChanged.addListener(function(changedWindowID) {
+        if (changedWindowID !== windowID) {
+            // close this popup whenever window focus changes away from this popups parent window
+            // solves the edge case where having an open popup in one window can cause a second open poup in another window to not receive messages
+            window.close()
+        }
+    })
+
     // read from storage or use defaults
     server = await storageGet('server') || server
     port = await storageGet('port') || port
 
-    chrome.windows.getCurrent(function(win) {
-        windowID = win.id
+    let win = await browser.windows.getCurrent()
+    windowID = win.id
 
-        chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-            tabID = tabs[0].id
+    let tabs = await browser.tabs.query({ active: true, currentWindow: true })
+    tabID = tabs[0].id
 
-            checkStatus()
-        })
-    })
+    await checkStatus()
 }
 
 partyTime()

@@ -8,13 +8,15 @@ let sock // will be an instance of WebSocket
 let server = 'local.test' // can be set by popup.html
 let port   = '4000'       // can be set by popup.html
 
+let connectAbort = false // can be set to true if disconnect request is received before a connection is fully established
+
 let defaultDocument = 'index.html' // can be changed by sock.onmessage
 
 let browserTabID = 0 // will be set to a positive integer once the extension is on and listening for changed files from the build tool
 
 let lastIconCustomColor = '' // will be a string like blue or pink
 
-let matchMediaDark = window.matchMedia('(prefers-color-scheme: dark)') // reference this object since we will be checking it a lot
+let matchMediaDark = window.matchMedia('(prefers-color-scheme: dark)') // reference this object since we will be checking it frequently
 
 let pingAttempt = 0 // will increment every time a ping request is sent from the extension, will be reset to 0 when a pong response is received from the server
 let pingTimer = null // will be a setInterval object
@@ -30,11 +32,11 @@ let windowID = 0 // will be set to a positive integer once the extension is on a
 //-----------
 // Functions
 //-----------
-function checkConnection() {
+async function checkConnection() {
     if (pingAttempt >= 3) {
         console.log('checkConnection -> three or more ping attempts failed')
         disconnect()
-        lostConnection()
+        await lostConnection()
     } else {
         if (sock.readyState === 1) { // open
             pingAttempt += 1
@@ -43,25 +45,34 @@ function checkConnection() {
             // socket is no longer open
             console.log('checkConnection -> socket is no longer open')
             disconnect()
-            lostConnection()
+            await lostConnection()
         }
     }
 } // checkConnection
 
-function connectionError() {
+async function connectionError() {
     status = 'set_status_connection_error'
 
-    chrome.runtime.sendMessage({ action: status, browserTabID: browserTabID }, function(response) {
+    try {
+        await browser.runtime.sendMessage({ action: status, browserTabID: browserTabID })
+    } catch (error) {
+        // the popup is most likely not active
         // do nothing
-    })
+    }
 
-    setBadge(chrome.i18n.getMessage('error'))
+    setBadge(browser.i18n.getMessage('error'))
     setIcon('pink')
 } // connectionError
 
 async function connect() {
     // try to disconnect first
     disconnect()
+
+    if (connectAbort === true) {
+        // we received a disconnect request before a connect could fully establish
+        console.log('connect -> connect abort')
+        return 'early'
+    }
 
     // read from storage or use defaults
     server = await storageGet('server') || server
@@ -71,27 +82,34 @@ async function connect() {
         sock = new WebSocket('ws://' + server + ':' + port)
 
         // on error
-        sock.onerror = function (event) {
+        sock.onerror = async function (event) {
             troubleshoot.sockError = event
+
+            await fixIcons() // fixes the edge case where one tab has a pink error icon and then a failed connection is made in a second tab that would turn a second icon pink
 
             connectionError()
         }
 
         // one time event
-        sock.onopen = function (event) {
+        sock.onopen = async function (event) {
             // check connection every 10 seconds
             pingTimer = setInterval(checkConnection, 10000)
 
-            chrome.tabs.onRemoved.addListener(tabRemoved)
+            browser.tabs.onRemoved.addListener(tabRemoved)
 
             status = 'set_status_connected'
 
-            chrome.runtime.sendMessage({ action: status, browserTabID: browserTabID }, function(response) {
+            try {
+                await browser.runtime.sendMessage({ action: status, browserTabID: browserTabID })
+            } catch (error) {
+                // the popup is most likely not active
                 // do nothing
-            })
+            }
 
-            setBadge(chrome.i18n.getMessage('on'))
+            setBadge(browser.i18n.getMessage('on'))
             setIcon('blue')
+
+            await fixIcons() // fixes the edge case where one tab has a pink error icon and then a succesful connection is made in a second tab that would turn a second icon blue
         }
 
         // every message
@@ -100,7 +118,7 @@ async function connect() {
 
             try {
                 data = JSON.parse(data)
-            } catch(e) {
+            } catch (error) {
                 // do nothing
             }
 
@@ -134,14 +152,10 @@ async function connect() {
             } else {
                 console.log('sock.onmessage ->', data)
             }
-
-            return Promise.resolve()
         } // sock.onmessage
-    } catch(err) {
+    } catch (error) {
         connectionError()
     }
-
-
 } // connect
 
 function disconnect() {
@@ -149,7 +163,7 @@ function disconnect() {
 
     pingAttempt = 0 // reset to 0
 
-    chrome.tabs.onRemoved.removeListener(tabRemoved)
+    browser.tabs.onRemoved.removeListener(tabRemoved)
 
     status = 'set_status_disconnected'
 
@@ -163,37 +177,58 @@ function disconnect() {
     setIcon()
 } // disconnect
 
-function extension_off() {
+async function extension_off() {
     disconnect()
 
     browserTabID = 0
     windowID = 0
 
-    chrome.runtime.sendMessage({ action: status, browserTabID: browserTabID }, function(response) {
+    try {
+        await browser.runtime.sendMessage({ action: status, browserTabID: browserTabID })
+    } catch (error) {
+        // the popup is most likely not active
         // do nothing
-    })
+    }
 } // extension_off
 
 async function extension_on() {
+    connectAbort = false
     await connect()
 } // extension_on
 
-function lostConnection() {
+async function lostConnection() {
     status = 'set_status_lost_connection'
 
-    chrome.runtime.sendMessage({ action: status, browserTabID: browserTabID }, function(response) {
+    try {
+        await browser.runtime.sendMessage({ action: status, browserTabID: browserTabID })
+    } catch (error) {
+        // the popup is most likely not active
         // do nothing
-    })
+    }
 
-    setBadge(chrome.i18n.getMessage('lost'))
+    setBadge(browser.i18n.getMessage('lost'))
     setIcon()
 } // lostConnection
 
-function reload() {
+async function fixIcons() {
+    // loop through all tabs and fix icons
+    let tabs = await browser.tabs.query({})
+
+    tabs.map(function(tab) {
+        if (browserTabID === tab.id) {
+            // set colorful icon
+            setIcon(lastIconCustomColor, tab.id)
+        } else {
+            // set default icon
+            setIcon('', tab.id)
+        }
+    })
+} // fixIcons
+
+async function reload() {
     if (browserTabID > 0) {
-        chrome.tabs.reload(browserTabID, { bypassCache: true }, function(callback) {
-            console.log('reload -> browserTabID ' + browserTabID + ' reloaded')
-        }) // first param is tab id
+        await browser.tabs.reload(browserTabID, { bypassCache: true })
+        console.log('reload -> browserTabID ' + browserTabID + ' reloaded')
     } else {
         console.log('reload -> browserTabID is not greater than 0')
     }
@@ -202,11 +237,11 @@ function reload() {
 function setBadge(text) {
     text = text || ''
 
-    chrome.browserAction.setBadgeText({
+    browser.browserAction.setBadgeText({
         'text': text
     })
 
-    chrome.browserAction.setBadgeBackgroundColor({
+    browser.browserAction.setBadgeBackgroundColor({
         'color': '#313639'
     })
 } // setBadge
@@ -225,7 +260,7 @@ function setIcon(color, tabID) {
         lastIconCustomColor = color
     }
 
-    chrome.browserAction.setIcon({
+    browser.browserAction.setIcon({
         'path': {
             '16':  'image/icon/icon-' + color + '-16.png',
             '24':  'image/icon/icon-' + color + '-24.png',
@@ -238,21 +273,14 @@ function setIcon(color, tabID) {
 } // setIcon
 
 async function storageGet(key) {
-    return await new Promise(function(resolve, reject) {
-        chrome.storage.local.get(key, function(obj) {
-            // obj can be an empty object
-            // obj will never be undefined according to https://developer.chrome.com/apps/storage#method-StorageArea-get
-            resolve(obj[key]) // this however, can be undefined
-        })
-    })
+    let obj = await browser.storage.local.get(key)
+    // obj can be an empty object {}
+    // obj will never be undefined
+    return obj[key] // an object key however, can be undefined
 } // storageGet
 
 async function storageSet(obj) {
-    await new Promise(function(resolve, reject) {
-        chrome.storage.local.set(obj, function() {
-            resolve()
-        })
-    })
+    await browser.storage.local.set(obj)
 } // storageSet
 
 function tabRemoved(tabID) {
@@ -269,41 +297,46 @@ function tabRemoved(tabID) {
     }
 } // tabRemoved
 
+function wait(ms) {
+    // useful for injecting delays and testing scenarios
+    return new Promise(resolve => setTimeout(resolve, ms));
+} // wait
+
 //-------------------
 // Incoming Messages
 //-------------------
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    console.log('chrome.runtime.onMessage -> ', request)
+browser.runtime.onMessage.addListener(async function(request, sender) {
+    console.log('browser.runtime.onMessage -> ', request)
 
     switch(request.action) {
         case 'extension_on':
             browserTabID = request.currentTabID
             windowID = request.currentWindowID
-            extension_on()
-            sendResponse('ok')
+            await extension_on()
+            return 'ok'
             break
         case 'extension_off':
+            connectAbort = true
             extension_off()
-            sendResponse('ok')
+            return Promise.resolve('ok')
             break
         case 'associate_tab':
             setIcon('', browserTabID)
             browserTabID = request.currentTabID
             windowID = request.currentWindowID
             setIcon('blue')
-            sendResponse('ok')
+            return Promise.resolve('ok')
             break
         case 'status':
-            // console.log('returned status -> ' + status)
-            sendResponse({
+            return Promise.resolve({
                 'action': status,
                 'browserTabID': browserTabID,
                 'windowID': windowID
             })
             break
         default:
-            console.log('chrome.runtime.onMessage -> unrecognized action "' + request.action + '"')
-            sendResponse('ok')
+            console.log('browser.runtime.onMessage -> unrecognized action "' + request.action + '"')
+            return Promise.resolve('ok')
     }
 })
 
@@ -323,30 +356,19 @@ async function partyTime() {
 
     // monitor for theme changes
     // background.js does not support matchMedia events in Chrome 76 so setInterval to the rescue
-    setInterval(function() {
+    setInterval(async function() {
         let previousTheme = theme
         theme = (matchMediaDark.matches) ? 'dark' : 'light'
 
-        // Chrome on mac will report light/dark preferences in real time
-        // Firefox on mac will not notice a preference change until Firefox is restarted
+        // Chrome on macOS notices operating system set light/dark preferences in real time
+        // Firefox on macOS does not notice operating system set light/dark preferences until Firefox is restarted
 
         if (previousTheme !== theme) {
-            // loop through all tabs and fix icons
-            chrome.tabs.query({}, function(tabs) {
-                tabs.map(function(tab) {
-                    if (browserTabID === tab.id) {
-                        // set colorful icon
-                        setIcon(lastIconCustomColor, tab.id)
-                    } else {
-                        // set default icon
-                        setIcon('', tab.id)
-                    }
-                })
-            })
+            await fixIcons()
         }
     }, 1000)
 
-    chrome.tabs.onUpdated.addListener(function(tabID, changeInfo, tab) {
+    browser.tabs.onUpdated.addListener(function(tabID, changeInfo, tab) {
         if (tabID === browserTabID) {
             // re-set the colorful icon for the feri associated tab
             console.log('tabs.onUpdated -> colorful icon re-set')
