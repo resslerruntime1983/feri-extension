@@ -1,22 +1,50 @@
 # Feri Extension
 
+A web browser extension that connects to [Feri](https://github.com/nightmode/feri) and automatically reloads a browser tab when files change.
+
+## Navigation
+
+* [Overview](#overview)
+* [Install](#install)
+* [Usage](#usage)
+* [Development](#develop)
+* [Deploy](#deploy)
+* [Thanks](#thanks)
+* [Support](#support)
+
+## Overview
+
 ...
 
-## Develop
+## Install
 
-### Develop with Chrome
+For Chrome, install this extension via the `Feri` page on the [Chrome Web Store](https://chrome.google.com/webstore/search/feri).
+
+For Firefox, ...
+
+## Usage
+
+...
+
+## Development
+
+Instructions for anyone who will be working with or forking this repo.
+
+### Development in Chrome
 
 Navigate to `chrome://extensions` and enable `developer mode`.
 
 Use `load unpacked` and select `deploy` as the extension folder.
 
-### Develop with Firefox
+### Development in Firefox
 
 Navigate to `about:debugging` and enable `add-on debugging`.
 
 Use `load temporary add-on` and select the `manifest.json` file within the `deploy` folder.
 
 ## Deploy
+
+Instructions mostly for myself but please feel free to use them if you are forking this repo and plan on publishing your own extension.
 
 ### Deploy for Chrome
 
@@ -37,7 +65,7 @@ Help [support this project](https://www.patreon.com/nightmode) on Patreon. Help 
 In addition to Patreon, here are some other ways you can help this project.
 
 * [Report any issues](https://github.com/nightmode/feri-extension/issues) on GitHub.
-* Language Translations
+* Language Translations.
 
 ## License
 
