@@ -294,11 +294,11 @@ function setIcon(color, tabID) {
 
     browser.browserAction.setIcon({
         'path': {
-            '16':  'image/icon/icon-' + color + '-16.png',
-            '24':  'image/icon/icon-' + color + '-24.png',
-            '32':  'image/icon/icon-' + color + '-32.png',
-            '48':  'image/icon/icon-' + color + '-48.png',
-            '128': 'image/icon/icon-' + color + '-128.png'
+            '16':  'images/icon/icon-' + color + '-16.png',
+            '24':  'images/icon/icon-' + color + '-24.png',
+            '32':  'images/icon/icon-' + color + '-32.png',
+            '48':  'images/icon/icon-' + color + '-48.png',
+            '128': 'images/icon/icon-' + color + '-128.png'
         },
         'tabId': (tabID > 0) ? tabID : null
     })
