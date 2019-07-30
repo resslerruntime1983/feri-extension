@@ -1,5 +1,12 @@
 'use strict'
 
+//---------------------------
+// Variables for Development
+//---------------------------
+let debug = false // Allow console logging and inspecting popups with dev tools in Chrome. Will be set by sending a message to background.js so leave this line with the default value of false for deployment safety.
+
+let troubleshoot = {} // generic troubleshooting object
+
 //-----------
 // Variables
 //-----------
@@ -21,6 +28,27 @@ let port   = '4000'       // default
 let tabID    = 0 // will be set to the current tab ID
 let windowID = 0 // will be set to the current window ID
 
+//---------------------------
+// Functions for Development
+//---------------------------
+function log(...items) {
+    if (debug) {
+        switch(items.length) {
+            case 1:
+                console.log(items[0])
+                break
+            case 2:
+                console.log(items[0], items[1])
+                break
+            case 3:
+                console.log(items[0], items[1], items[2])
+                break
+            default:
+                console.log('log ->', items)
+        }
+    }
+} // log
+
 //-----------
 // Functions
 //-----------
@@ -33,6 +61,10 @@ function clearError() {
     displayError.style.display = 'none'
     displayError.innerHTML = ''
 } // clearError
+
+async function checkDebug() {
+    debug = await browser.runtime.sendMessage({ action: 'debug' })
+} // checkDebug
 
 async function checkStatus() {
     let response = await browser.runtime.sendMessage({ action: 'status' })
@@ -63,7 +95,7 @@ function setStatus(obj) {
                     // send message to background.js to set the active tab id to currentTabID and update the icons, yadda yadda
                     let response = await browser.runtime.sendMessage({ action: 'associate_tab', currentTabID: tabID, currentWindowID: currentWindowID })
 
-                    console.log(response)
+                    log(response)
                     window.close()
                 })
 
@@ -118,7 +150,7 @@ function setStatus(obj) {
 
             break
         default:
-            console.log('status -> unrecognized status "' + status + '"')
+            log('status -> unrecognized status "' + status + '"')
     }
 } // status
 
@@ -150,7 +182,7 @@ buttonConnect.addEventListener('click', async function(e) {
 
     let response = await browser.runtime.sendMessage({ action: 'extension_on', currentTabID: tabID, currentWindowID: windowID })
 
-    console.log(response)
+    log(response)
 })
 
 // disconnect button
@@ -161,7 +193,7 @@ buttonDisconnect.addEventListener('click', async function(e) {
 
     let response = await browser.runtime.sendMessage({ action: 'extension_off' })
 
-    console.log(response)
+    log(response)
 })
 
 // reconnect button
@@ -177,7 +209,7 @@ buttonReconnect.addEventListener('click', async function(e) {
 
     let response = await browser.runtime.sendMessage({ action: 'extension_on', currentTabID: tabID, currentWindowID: windowID })
 
-    console.log(response)
+    log(response)
 })
 
 // config button
@@ -203,7 +235,7 @@ buttonConfig.addEventListener('click', async function(e) {
 
     let response = await browser.runtime.sendMessage({ action: 'extension_off' })
 
-    console.log(response)
+    log(response)
 
     displayStatus.innerText = browser.i18n.getMessage('config')
 })
@@ -256,7 +288,7 @@ inputPort.addEventListener('keydown', function(e) {
 // Incoming Messages
 //-------------------
 browser.runtime.onMessage.addListener(function(request, sender) {
-    console.log('browser.runtime.onMessage -> ', request)
+    log('browser.runtime.onMessage -> ', request)
 
     setStatus(request)
 
@@ -267,13 +299,17 @@ browser.runtime.onMessage.addListener(function(request, sender) {
 // Party Time
 //------------
 async function partyTime() {
-    chrome.windows.onFocusChanged.addListener(function(changedWindowID) {
-        if (changedWindowID !== windowID) {
-            // close this popup whenever window focus changes away from this popups parent window
-            // solves the edge case where having an open popup in one window can cause a second open poup in another window to not receive messages
-            window.close()
-        }
-    })
+    await checkDebug()
+
+    if (debug === false) {
+        chrome.windows.onFocusChanged.addListener(function(changedWindowID) {
+            if (changedWindowID !== windowID) {
+                // close this popup whenever window focus changes away from this popups parent window
+                // solves the edge case where having an open popup in one window can cause a second open poup in another window to not receive messages
+                window.close()
+            }
+        })
+    }
 
     // read from storage or use defaults
     server = await storageGet('server') || server

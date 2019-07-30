@@ -1,13 +1,15 @@
 'use strict'
 
+//---------------------------
+// Variables for Development
+//---------------------------
+let debug = false // Allow console logging and inspecting popups with dev tools in Chrome. Popup pages will request this variable so you only need to set it here once.
+
+let troubleshoot = {} // generic troubleshooting object
+
 //-----------
 // Variables
 //-----------
-let sock // will be an instance of WebSocket
-
-let server = 'local.test' // can be set by popup.html
-let port   = '4000'       // can be set by popup.html
-
 let connectAbort = false // can be set to true if disconnect request is received before a connection is fully established
 
 let defaultDocument = 'index.html' // can be changed by sock.onmessage
@@ -21,20 +23,50 @@ let matchMediaDark = window.matchMedia('(prefers-color-scheme: dark)') // refere
 let pingAttempt = 0 // will increment every time a ping request is sent from the extension, will be reset to 0 when a pong response is received from the server
 let pingTimer = null // will be a setInterval object
 
+let port = '4000' // can be set by popup.html
+
+let server = 'local.test' // can be set by popup.html
+
+let sock // will be an instance of WebSocket
+
 let status = 'set_status_disconnected' // current status or last known action string sent to popup.html
 
 let theme = (matchMediaDark.matches) ? 'dark' : 'light' // dark or light depending on the browser
 
-let troubleshoot = {} // generic troubleshooting object
-
 let windowID = 0 // will be set to a positive integer once the extension is on and listening for changed files from the build tool
+
+//---------------------------
+// Functions for Development
+//---------------------------
+function log(...items) {
+    if (debug) {
+        switch(items.length) {
+            case 1:
+                console.log(items[0])
+                break
+            case 2:
+                console.log(items[0], items[1])
+                break
+            case 3:
+                console.log(items[0], items[1], items[2])
+                break
+            default:
+                console.log('log ->', items)
+        }
+    }
+} // log
+
+function wait(ms) {
+    // useful for injecting delays and testing scenarios
+    return new Promise(resolve => setTimeout(resolve, ms));
+} // wait
 
 //-----------
 // Functions
 //-----------
 async function checkConnection() {
     if (pingAttempt >= 3) {
-        console.log('checkConnection -> three or more ping attempts failed')
+        log('checkConnection -> three or more ping attempts failed')
         disconnect()
         await lostConnection()
     } else {
@@ -43,26 +75,12 @@ async function checkConnection() {
             sock.send("ping")
         } else {
             // socket is no longer open
-            console.log('checkConnection -> socket is no longer open')
+            log('checkConnection -> socket is no longer open')
             disconnect()
             await lostConnection()
         }
     }
 } // checkConnection
-
-async function connectionError() {
-    status = 'set_status_connection_error'
-
-    try {
-        await browser.runtime.sendMessage({ action: status, browserTabID: browserTabID })
-    } catch (error) {
-        // the popup is most likely not active
-        // do nothing
-    }
-
-    setBadge(browser.i18n.getMessage('error'))
-    setIcon('pink')
-} // connectionError
 
 async function connect() {
     // try to disconnect first
@@ -70,7 +88,7 @@ async function connect() {
 
     if (connectAbort === true) {
         // we received a disconnect request before a connect could fully establish
-        console.log('connect -> connect abort')
+        log('connect -> connect abort')
         return 'early'
     }
 
@@ -134,7 +152,7 @@ async function connect() {
             // any files built?
             if (data.hasOwnProperty('files')) {
                 if (Array.isArray(data.files)) {
-                    console.log('sock.onmessage -> reload')
+                    log('sock.onmessage -> reload')
                     reload()
                 }
             }
@@ -150,13 +168,27 @@ async function connect() {
                     pingAttempt = 0 // reset to 0
                 }
             } else {
-                console.log('sock.onmessage ->', data)
+                log('sock.onmessage ->', data)
             }
         } // sock.onmessage
     } catch (error) {
         connectionError()
     }
 } // connect
+
+async function connectionError() {
+    status = 'set_status_connection_error'
+
+    try {
+        await browser.runtime.sendMessage({ action: status, browserTabID: browserTabID })
+    } catch (error) {
+        // the popup is most likely not active
+        // do nothing
+    }
+
+    setBadge(browser.i18n.getMessage('error'))
+    setIcon('pink')
+} // connectionError
 
 function disconnect() {
     clearInterval(pingTimer)
@@ -196,20 +228,6 @@ async function extension_on() {
     await connect()
 } // extension_on
 
-async function lostConnection() {
-    status = 'set_status_lost_connection'
-
-    try {
-        await browser.runtime.sendMessage({ action: status, browserTabID: browserTabID })
-    } catch (error) {
-        // the popup is most likely not active
-        // do nothing
-    }
-
-    setBadge(browser.i18n.getMessage('lost'))
-    setIcon()
-} // lostConnection
-
 async function fixIcons() {
     // loop through all tabs and fix icons
     let tabs = await browser.tabs.query({})
@@ -225,12 +243,26 @@ async function fixIcons() {
     })
 } // fixIcons
 
+async function lostConnection() {
+    status = 'set_status_lost_connection'
+
+    try {
+        await browser.runtime.sendMessage({ action: status, browserTabID: browserTabID })
+    } catch (error) {
+        // the popup is most likely not active
+        // do nothing
+    }
+
+    setBadge(browser.i18n.getMessage('lost'))
+    setIcon()
+} // lostConnection
+
 async function reload() {
     if (browserTabID > 0) {
         await browser.tabs.reload(browserTabID, { bypassCache: true })
-        console.log('reload -> browserTabID ' + browserTabID + ' reloaded')
+        log('reload -> browserTabID ' + browserTabID + ' reloaded')
     } else {
-        console.log('reload -> browserTabID is not greater than 0')
+        log('reload -> browserTabID is not greater than 0')
     }
 } // reload
 
@@ -291,22 +323,17 @@ function tabRemoved(tabID) {
 
         disconnect()
 
-        console.log('tabRemoved -> disconnected')
+        log('tabRemoved -> disconnected')
     } else {
-        console.log('tabRemoved -> nothing to do')
+        log('tabRemoved -> nothing to do')
     }
 } // tabRemoved
-
-function wait(ms) {
-    // useful for injecting delays and testing scenarios
-    return new Promise(resolve => setTimeout(resolve, ms));
-} // wait
 
 //-------------------
 // Incoming Messages
 //-------------------
 browser.runtime.onMessage.addListener(async function(request, sender) {
-    console.log('browser.runtime.onMessage -> ', request)
+    log('browser.runtime.onMessage -> ', request)
 
     switch(request.action) {
         case 'extension_on':
@@ -327,6 +354,9 @@ browser.runtime.onMessage.addListener(async function(request, sender) {
             setIcon('blue')
             return Promise.resolve('ok')
             break
+        case 'debug':
+            return Promise.resolve(debug)
+            break
         case 'status':
             return Promise.resolve({
                 'action': status,
@@ -335,7 +365,7 @@ browser.runtime.onMessage.addListener(async function(request, sender) {
             })
             break
         default:
-            console.log('browser.runtime.onMessage -> unrecognized action "' + request.action + '"')
+            log('browser.runtime.onMessage -> unrecognized action "' + request.action + '"')
             return Promise.resolve('ok')
     }
 })
@@ -371,7 +401,7 @@ async function partyTime() {
     browser.tabs.onUpdated.addListener(function(tabID, changeInfo, tab) {
         if (tabID === browserTabID) {
             // re-set the colorful icon for the feri associated tab
-            console.log('tabs.onUpdated -> colorful icon re-set')
+            log('tabs.onUpdated -> colorful icon re-set')
             setIcon(lastIconCustomColor, browserTabID)
         }
     })
