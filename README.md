@@ -32,7 +32,7 @@ For Firefox, install via the `Feri` page on the [Firefox Add-ons](https://addons
 
 ## Usage
 
-Visit the [usage guide](docs/usage.md#usuage) for more info.
+Visit the [usage guide](docs/usage.md#usage) for more info.
 
 ## Development
 
