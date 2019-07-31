@@ -39,33 +39,33 @@ Any non-associated tabs will always have colorless icons to help you know at a g
 
 Click the Feri icon and you'll see the following screen.
 
-<img src="https://raw.githubusercontent.com/nightmode/feri-extension/master/images/docs/disconnected.png" width="316" height="353" align="" alt="">
+<img src="https://raw.githubusercontent.com/nightmode/feri-extension/master/images/docs/disconnected.png" width="318" height="354" align="" alt="">
 
 If this is your first time running Feri, you'll want to check the config screen before attempting a connection.
 
 Click the config button (blue wrench below).
 
-<img src="https://raw.githubusercontent.com/nightmode/feri-extension/master/images/docs/config-hover.png" width="316" height="353" align="" alt="">
+<img src="https://raw.githubusercontent.com/nightmode/feri-extension/master/images/docs/config-hover.png" width="318" height="354" align="" alt="">
 
 ...
 
-<img src="https://raw.githubusercontent.com/nightmode/feri-extension/master/images/docs/config.png" width="316" height="353" align="" alt="">
+<img src="https://raw.githubusercontent.com/nightmode/feri-extension/master/images/docs/config.png" width="318" height="354" align="" alt="">
 
 ...
 
-<img src="https://raw.githubusercontent.com/nightmode/feri-extension/master/images/docs/config-save-hover.png" width="316" height="353" align="" alt="">
+<img src="https://raw.githubusercontent.com/nightmode/feri-extension/master/images/docs/config-save-hover.png" width="318" height="354" align="" alt="">
 
 ...
 
-<img src="https://raw.githubusercontent.com/nightmode/feri-extension/master/images/docs/config-saved.png" width="316" height="353" align="" alt="">
+<img src="https://raw.githubusercontent.com/nightmode/feri-extension/master/images/docs/config-saved.png" width="318" height="354" align="" alt="">
 
 ...
 
-<img src="https://raw.githubusercontent.com/nightmode/feri-extension/master/images/docs/connect-hover.png" width="316" height="353" align="" alt="">
+<img src="https://raw.githubusercontent.com/nightmode/feri-extension/master/images/docs/connect-hover.png" width="318" height="354" align="" alt="">
 
 ...
 
-<img src="https://raw.githubusercontent.com/nightmode/feri-extension/master/images/docs/connected.png" width="316" height="353" align="" alt="">
+<img src="https://raw.githubusercontent.com/nightmode/feri-extension/master/images/docs/connected.png" width="318" height="354" align="" alt="">
 
 ...
 
@@ -73,11 +73,11 @@ Click the config button (blue wrench below).
 
 ...
 
-<img src="https://raw.githubusercontent.com/nightmode/feri-extension/master/images/docs/disconnect-hover.png" width="316" height="353" align="" alt="">
+<img src="https://raw.githubusercontent.com/nightmode/feri-extension/master/images/docs/disconnect-hover.png" width="318" height="354" align="" alt="">
 
 ...
 
-<img src="https://raw.githubusercontent.com/nightmode/feri-extension/master/images/docs/disconnected.png" width="316" height="353" align="" alt="">
+<img src="https://raw.githubusercontent.com/nightmode/feri-extension/master/images/docs/disconnected.png" width="318" height="354" align="" alt="">
 
 ...
 
@@ -87,7 +87,7 @@ Click the config button (blue wrench below).
 
 ### Connection Error
 
-<img src="https://raw.githubusercontent.com/nightmode/feri-extension/master/images/docs/connection-error.png" width="316" height="353" align="" alt="">
+<img src="https://raw.githubusercontent.com/nightmode/feri-extension/master/images/docs/connection-error.png" width="318" height="354" align="" alt="">
 
 ...
 
@@ -97,7 +97,7 @@ Click the config button (blue wrench below).
 
 ### Lost Connection
 
-<img src="https://raw.githubusercontent.com/nightmode/feri-extension/master/images/docs/lost-connection.png" width="316" height="353" align="" alt="">
+<img src="https://raw.githubusercontent.com/nightmode/feri-extension/master/images/docs/lost-connection.png" width="318" height="354" align="" alt="">
 
 ...
 
@@ -107,7 +107,7 @@ Click the config button (blue wrench below).
 
 ### Tab Association
 
-<img src="https://raw.githubusercontent.com/nightmode/feri-extension/master/images/docs/associate.png" width="316" height="353" align="" alt="">
+<img src="https://raw.githubusercontent.com/nightmode/feri-extension/master/images/docs/associate.png" width="318" height="354" align="" alt="">
 
 ...
 
