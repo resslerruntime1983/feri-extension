@@ -20,8 +20,8 @@
         "description": "Status message seen after a failed connection attempt."
     },
     "connectionHelp": {
-        "message": "Make sure a Feri extension server is running on [server] port [port].",
-        "description": "Help text displayed when a connection can not be made. The strings [server] and [port] will be replaced by appropriate values when displayed."
+        "message": "Make sure a Feri extension server is running on {server} port {port}.",
+        "description": "Help text displayed when a connection can not be made. The strings {server} and {port} will be replaced by appropriate values when displayed."
     },
     "connectionHelpContinued": {
         "message": "The extension server, extension client, web browser, and any networking involved may need to be modified.",
@@ -55,9 +55,17 @@
         "message": "Feri is not associated with this browser tab.",
         "description": "Message shown if the extension is connected and the user is activating the extension in a tab that is not set to reload when notified by the extension server."
     },
-    "notAssociatedLinks": {
-        "message": "<a id=\"associate_here\">Associate with this tab</a> or <a id=\"associate_return\">return to the associated tab</a>.",
-        "description": "Links shown if the extension is connected and the user is activating the extension in a tab that is not set to reload when notified by the extension server."
+    "notAssociatedLinkOne": {
+        "message": "Associate with this tab",
+        "description": "The first of two links shown if the extension is connected and the user is activating the extension in a tab that is not set to reload when notified by the extension server."
+    },
+    "notAssociatedLinkTwo": {
+        "message": "return to the associated tab",
+        "description": "The second of two links shown if the extension is connected and the user is activating the extension in a tab that is not set to reload when notified by the extension server."
+    },
+    "notAssociatedOr": {
+        "message": "or",
+        "description": "The word 'or' in the sentence, 'Associate with this tab or return to the associated tab.'"
     },
     "on": {
         "message": "on",

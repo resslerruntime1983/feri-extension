@@ -54,12 +54,20 @@ function log(...items) {
 //-----------
 function clearAssociate() {
     displayAssociate.style.display = 'none'
-    displayAssociate.innerText = ''
+
+    // loop through and remove any sub elements
+    while (displayAssociate.lastChild) {
+        displayAssociate.removeChild(displayAssociate.lastChild)
+    }
 } // clearAssociate
 
 function clearError() {
     displayError.style.display = 'none'
-    displayError.innerHTML = ''
+
+    // loop through and remove any sub elements
+    while (displayError.lastChild) {
+        displayError.removeChild(displayError.lastChild)
+    }
 } // clearError
 
 async function checkDebug() {
@@ -74,7 +82,7 @@ async function checkStatus() {
 function setStatus(obj) {
     switch(obj.action) {
         case 'set_status_connected':
-            displayStatus.innerText = browser.i18n.getMessage('connected')
+            displayStatus.textContent = browser.i18n.getMessage('connected')
 
             buttonConnect.style.display = 'none'
             buttonDisconnect.style.display = 'inline-block'
@@ -84,7 +92,29 @@ function setStatus(obj) {
             clearAssociate()
 
             if (tabID !== obj.browserTabID) {
-                displayAssociate.innerHTML = '<p>' + browser.i18n.getMessage('notAssociated') + '</p><p>' + browser.i18n.getMessage('notAssociatedLinks') + '</p>'
+                let elementParagraph1 = document.createElement('p')
+                elementParagraph1.textContent = browser.i18n.getMessage('notAssociated')
+
+                let elementLink1 = document.createElement('a')
+                elementLink1.id = 'associate_here'
+                elementLink1.textContent = browser.i18n.getMessage('notAssociatedLinkOne')
+
+                let elementText1 = document.createTextNode(' ' + browser.i18n.getMessage('notAssociatedOr') + ' ')
+
+                let elementLink2 = document.createElement('a')
+                elementLink2.id = 'associate_return'
+                elementLink2.textContent = browser.i18n.getMessage('notAssociatedLinkTwo')
+
+                let elementText2 = document.createTextNode('.')
+
+                let elementParagraph2 = document.createElement('p')
+                elementParagraph2.appendChild(elementLink1)
+                elementParagraph2.appendChild(elementText1)
+                elementParagraph2.appendChild(elementLink2)
+                elementParagraph2.appendChild(elementText2)
+
+                displayAssociate.appendChild(elementParagraph1)
+                displayAssociate.appendChild(elementParagraph2)
 
                 document.getElementById('associate_here').addEventListener('click', async function(e) {
                     e.preventDefault()
@@ -111,7 +141,7 @@ function setStatus(obj) {
 
             break
         case 'set_status_disconnected':
-            displayStatus.innerText = browser.i18n.getMessage('disconnected')
+            displayStatus.textContent = browser.i18n.getMessage('disconnected')
 
             buttonConnect.style.display = 'inline-block'
             buttonDisconnect.style.display = 'none'
@@ -122,7 +152,7 @@ function setStatus(obj) {
 
             break
         case 'set_status_lost_connection':
-            displayStatus.innerText = browser.i18n.getMessage('lostConnection')
+            displayStatus.textContent = browser.i18n.getMessage('lostConnection')
 
             buttonConnect.style.display = 'none'
             buttonDisconnect.style.display = 'none'
@@ -133,7 +163,7 @@ function setStatus(obj) {
 
             break
         case 'set_status_connection_error':
-            displayStatus.innerText = browser.i18n.getMessage('connectionError')
+            displayStatus.textContent = browser.i18n.getMessage('connectionError')
 
             buttonConnect.style.display = 'inline-block'
             buttonDisconnect.style.display = 'none'
@@ -143,10 +173,19 @@ function setStatus(obj) {
 
             config_area.style.display = 'none'
 
-            displayError.style.display = 'block'
-            displayError.innerHTML = '<p>' + browser.i18n.getMessage('connectionHelp').replace('[server]', server).replace('[port]', port) + '</p><p>' + browser.i18n.getMessage('connectionHelpContinued') + '</p>'
-
+            clearError()
             clearAssociate()
+
+            let elementOne = document.createElement('p')
+            elementOne.textContent = browser.i18n.getMessage('connectionHelp').replace('{server}', server).replace('{port}', port)
+
+            let elementTwo = document.createElement('p')
+            elementTwo.textContent = browser.i18n.getMessage('connectionHelpContinued')
+
+            displayError.appendChild(elementOne)
+            displayError.appendChild(elementTwo)
+
+            displayError.style.display = 'block'
 
             break
         default:
@@ -175,7 +214,7 @@ buttonConnect.addEventListener('click', async function(e) {
 
     buttonConnect.blur()
 
-    displayStatus.innerText = browser.i18n.getMessage('connecting')
+    displayStatus.textContent = browser.i18n.getMessage('connecting')
 
     buttonConnect.style.display = 'none'
     buttonDisconnect.style.display = 'inline-block'
@@ -202,7 +241,7 @@ buttonReconnect.addEventListener('click', async function(e) {
 
     buttonReconnect.blur()
 
-    displayStatus.innerText = browser.i18n.getMessage('connecting')
+    displayStatus.textContent = browser.i18n.getMessage('connecting')
 
     buttonReconnect.style.display = 'none'
     buttonDisconnect.style.display = 'inline-block'
@@ -237,14 +276,14 @@ buttonConfig.addEventListener('click', async function(e) {
 
     log(response)
 
-    displayStatus.innerText = browser.i18n.getMessage('config')
+    displayStatus.textContent = browser.i18n.getMessage('config')
 })
 
 // save button
 buttonSave.addEventListener('click', function(e) {
     clearError()
 
-    displayStatus.innerText = browser.i18n.getMessage('configSaved')
+    displayStatus.textContent = browser.i18n.getMessage('configSaved')
 
     configArea.style.display = 'none'
 

@@ -20,9 +20,17 @@ No matter which platform you are deploying on, make sure the `debug` setting ins
 
 ### Deploy for Chrome
 
-Everything in the `deploy` directory should be zipped and then uploaded via the Chrome Web Store's [Developer Dashboard](https://chrome.google.com/webstore/developer/dashboard).
+Edit `deploy/manifest.json` and temporarily remove the `browser_specific_settings` object which causes errors in Chrome.
+
+Zip up everything in the `deploy` directory and set the zip file aside for a moment.
+
+Restore `manifest.json` so it includes the previously removed `browser_specific_settings` object.
+
+Upload the zip file using the Chrome Web Store's [Developer Dashboard](https://chrome.google.com/webstore/developer/dashboard).
 
 ### Deploy for Firefox
+
+Check `deploy/manifest.json` and make sure the `browser_specific_settings` > `geko` > `id` string is related to the Firefox add-on account you will be using.
 
 ...
 
