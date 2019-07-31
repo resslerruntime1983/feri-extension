@@ -8,9 +8,9 @@ A web browser extension that connects to [Feri](https://github.com/nightmode/fer
 
 * [Overview](#overview)
 * [Install](#install)
-* [Usage](docs/usage.md)
-* [Development](#develop)
-* [Deploy](#deploy)
+* [Usage](docs/usage.md#usage)
+* [Development](docs/development.md#development)
+* [Deploy](docs/deploy.md#deploy)
 * [Thanks](#thanks)
 * [Support](#support)
 
@@ -28,35 +28,15 @@ For Firefox, install via the `Feri` page on the [Firefox Add-ons](https://addons
 
 ## Usage
 
-Visit the [usage guide](docs/usage.md) for more info.
+Visit the [usage guide](docs/usage.md#usuage) for more info.
 
 ## Development
 
-Instructions for anyone who will be working with or forking this repo.
-
-### Development in Chrome
-
-Navigate to `chrome://extensions` and enable `developer mode`.
-
-Use `load unpacked` and select `deploy` as the extension folder.
-
-### Development in Firefox
-
-Navigate to `about:debugging` and enable `add-on debugging`.
-
-Use `load temporary add-on` and select the `manifest.json` file within the `deploy` folder.
+Visit the [development guide](docs/development.md#development) for more info.
 
 ## Deploy
 
-Instructions mostly for myself but please feel free to use them if you are forking this repo and plan on publishing your own extension.
-
-### Deploy for Chrome
-
-Everything in the `deploy` directory should be zipped and then uploaded via the Chrome Web Store's [Developer Dashboard](https://chrome.google.com/webstore/developer/dashboard).
-
-### Deploy for Firefox
-
-...
+Visit the [deploy guide](docs/deploy.md#deploy) for more info.
 
 ## Thanks
 
