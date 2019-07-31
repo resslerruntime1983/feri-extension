@@ -21,7 +21,7 @@ Usage guide for the Feri web browser extension that connects to [Feri](https://g
 Find the Feri icon in your browser toolbar. It should look similar to a browser reload icon.
 
 |Icon|Description|
-|:---:|---|
+|:---:|:---|
 | <img src="https://raw.githubusercontent.com/nightmode/feri-extension/master/images/docs/icon-gray-48.png" width="24" height="24" align="" alt=""> | By default, the Feri icon will be colorless which indicates a disconnected or lost connection state. For a lost connection state, a text badge "lost" will display on all tabs. |
 | <img src="https://raw.githubusercontent.com/nightmode/feri-extension/master/images/docs/icon-blue-48.png" width="24" height="24" align="" alt=""> | Once a connection is made, the icon for the associated browser tab will turn blue. A text badge "on" will display on all tabs.|
 | <img src="https://raw.githubusercontent.com/nightmode/feri-extension/master/images/docs/icon-pink-48.png" width="24" height="24" align="" alt=""> | If a connection attempt fails, the icon for the associated browser tab will turn pink. A text badge "error" will display on all tabs. |
@@ -40,7 +40,7 @@ Click the config button (blue wrench below).
 
 <img src="https://raw.githubusercontent.com/nightmode/feri-extension/master/images/docs/config-hover.png" width="318" height="354" align="" alt="">
 
-The config screen (below) allows you to set an extension server address and port number.
+The config screen allows you to set an extension server address and port number.
 
 <img src="https://raw.githubusercontent.com/nightmode/feri-extension/master/images/docs/config.png" width="318" height="354" align="" alt="">
 
@@ -82,6 +82,8 @@ The Feri icon will also revert to gray to indicate a disconnected state.
 
 <img src="https://raw.githubusercontent.com/nightmode/feri-extension/master/images/docs/icon-gray-48.png" width="24" height="24" align="" alt="">
 
+***
+
 ### Connection Error
 
 A connection error will happen after a failed connection attempt. Most of the time you will see the screen below immediately after clicking the connect button.
@@ -106,6 +108,8 @@ To resolve a connection error, consider the following.
 
 In any case, you can access the config screen to try a different setting and/or click the connect button to try again.
 
+***
+
 ### Lost Connection
 
 Once connected, the extension server and client both ping each other every so often to ensure a good connection. If enough pings fail in a row, a lost connection will occur.
@@ -119,6 +123,8 @@ Click the Feri icon and you will see the lost connection screen below.
 <img src="https://raw.githubusercontent.com/nightmode/feri-extension/master/images/docs/lost-connection.png" width="318" height="354" align="" alt="">
 
 At this point, make sure the Feri build tool is running and if it is, try to reconnect.
+
+***
 
 ### Tab Association
 
