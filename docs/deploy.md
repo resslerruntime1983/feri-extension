@@ -26,13 +26,15 @@ Zip up everything in the `deploy` directory and set the zip file aside for a mom
 
 Restore `manifest.json` so it includes the previously removed `browser_specific_settings` object.
 
-Upload the zip file using the Chrome Web Store's [Developer Dashboard](https://chrome.google.com/webstore/developer/dashboard).
+Upload the zip file to the Chrome Web Store via the [Developer Dashboard](https://chrome.google.com/webstore/developer/dashboard).
 
 ### Deploy for Firefox
 
-Check `deploy/manifest.json` and make sure the `browser_specific_settings` > `geko` > `id` string is related to the Firefox add-on account you will be using.
+Check `deploy/manifest.json` and make sure the `browser_specific_settings` > `geko` > `id` string is related to the add-on developer account you will be using.
 
-...
+Zip up everything in the `deploy` directory.
+
+Upload the zip file to the Firefox Add-ons site via the [Developer Hub](https://addons.mozilla.org/en-US/developers/addons).
 
 ## License
 
