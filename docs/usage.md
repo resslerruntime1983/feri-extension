@@ -82,7 +82,7 @@ The Feri icon will also revert to gray to indicate a disconnected state.
 
 <img src="https://raw.githubusercontent.com/nightmode/feri-extension/master/images/docs/icon-gray-48.png" width="24" height="24" align="" alt="">
 
-***
+---
 
 ### Connection Error
 
@@ -108,7 +108,7 @@ To resolve a connection error, consider the following.
 
 In any case, you can access the config screen to try a different setting and/or click the connect button to try again.
 
-***
+---
 
 ### Lost Connection
 
@@ -124,7 +124,7 @@ Click the Feri icon and you will see the lost connection screen below.
 
 At this point, make sure the Feri build tool is running and if it is, try to reconnect.
 
-***
+---
 
 ### Tab Association
 
