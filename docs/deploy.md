@@ -1,6 +1,6 @@
 # Feri Extension - Deploy
 
-Deploy guide for the Feri web browser extension that connects to [Feri](https://github.com/nightmode/feri) and automatically reloads a browser tab when files change.
+Deploy guide for the Feri browser extension that connects to the [Feri](https://github.com/nightmode/feri) build tool and automatically reloads a browser tab when files change.
 
 ## Navigation
 
@@ -14,9 +14,9 @@ Deploy guide for the Feri web browser extension that connects to [Feri](https://
 
 ## Deploy
 
-Instructions mostly for myself but please feel free to use them if you are forking this repo and plan on publishing your own extension.
+Instructions mostly for myself but feel free to use them if you are forking this repo and plan on publishing your own extension.
 
-No matter which platform you are deploying on, make sure the `debug` setting inside `deploy/js/background.js` is set to `false`. If left on, the user's extension will spend time logging information they will never see. Even worse, the user could potentially trigger two or more popup windows which leads to a bad edge case where only one popup works.
+No matter which platform you are deploying on, make sure the `debug` setting inside `deploy/js/background.js` is set to `false`. If left on, the user's extension will spend time logging information they will never see. Even worse, the user could potentially trigger two or more popup windows which leads to an edge case where only one popup works.
 
 ### Deploy for Chrome
 
@@ -30,7 +30,7 @@ Upload the zip file to the Chrome Web Store via the [Developer Dashboard](https:
 
 ### Deploy for Firefox
 
-Check `deploy/manifest.json` and make sure the `browser_specific_settings` > `geko` > `id` string is related to the add-on developer account you will be using.
+Check `deploy/manifest.json` and make sure the `browser_specific_settings` > `gecko` > `id` string is related to the add-on developer account you will be using.
 
 Zip up everything in the `deploy` directory.
 
