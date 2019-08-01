@@ -4,9 +4,6 @@
 
 A web browser extension that connects to the [Feri](https://github.com/nightmode/feri) build tool and automatically reloads a browser tab when files change.
 
-**Temporal Warning:** This extension requires
-Feri version 4.0.0 which is slated for an early August 2019 release.
-
 
 ## Navigation
 
