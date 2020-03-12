@@ -387,7 +387,7 @@ async function partyTime() {
     // monitor for theme changes
     // background.js does not support matchMedia events in Chrome 76 so setInterval to the rescue
     setInterval(async function() {
-        let previousTheme = theme
+        const previousTheme = theme
         theme = (matchMediaDark.matches) ? 'dark' : 'light'
 
         // Chrome on macOS notices operating system set light/dark preferences in real time
