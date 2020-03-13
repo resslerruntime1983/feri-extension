@@ -16,7 +16,9 @@ Deploy guide for the Feri browser extension that connects to the [Feri](https://
 
 Instructions mostly for myself but feel free to use them if you are forking this repo and plan on publishing your own extension.
 
-No matter which platform you are deploying on, make sure the `debug` setting inside `deploy/js/background.js` is set to `false`. If left on, the user's extension will spend time logging information they will never see. Even worse, the user could potentially trigger two or more popup windows which leads to an edge case where only one popup works.
+No matter which platform you are deploying on, make sure `local.setting.debug` is `false` inside `deploy/js/background.js`. If left on, the extension could potentially allow two or more popup windows which leads to an edge case where only one popup works.
+
+Also make sure `local.setting.log` is `false` in `deploy/js/shared.js`. If left on, the extension will spend time logging information that most users will never see.
 
 ### Deploy for Chrome
 

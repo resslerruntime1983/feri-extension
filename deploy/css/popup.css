@@ -1,9 +1,21 @@
-/* special */
+/*
+Unique
+*/
+
 *, *:before, *:after {
   box-sizing: border-box;
 }
 
-/* elements */
+/*
+Font Families
+*/
+
+/* emtpy */
+
+/*
+Elements
+*/
+
 body {
     background-repeat: no-repeat;
     background-image: url('/images/feri.png');
@@ -16,11 +28,13 @@ body {
     padding: 1em;
     width: 300px;
 }
+
 a {
     color: white;
     cursor: pointer;
     text-decoration: underline;
 }
+
 button {
     background: transparent;
     border: none;
@@ -30,18 +44,11 @@ button {
     outline: none;
     padding: 0.3em;
 }
-button img {
-    filter: brightness(0.65);
-    height: 49px;
-    width: 49px;
-}
-button:focus img,
-button:hover img {
-    filter: sepia(1) hue-rotate(163deg) saturate(5);
-}
+
 h1 {
     margin: 0 0 0 -1px;
 }
+
 hr {
     background: #ccc;
     background: none;
@@ -49,94 +56,51 @@ hr {
     height: 1px;
     margin: 1.05em 0;
 }
-input[type=text],
-input[type=number] {
-    font-size: 1.1em;
-    padding: 0.25em 0.3em;
-}
-input[type=text]:focus,
-input[type=number]:focus {
-    outline: 2px solid #00AAFF;
-}
-input[type=text] {
-    width: 100%;
-}
-input[type=number] {
-    -moz-appearance: textfield;
-    width: 50%;
-}
-input[type=number]::-webkit-inner-spin-button,
-input[type=number]::-webkit-outer-spin-button {
-    margin: 0;
-    -webkit-appearance: none;
-}
+
 label {
     display: block;
     font-weight: 600;
     padding: 0 0 0.2em 0;
 }
 
-/* content area */
-#content_area {
-    width: 54%;
-}
+/*
+IDs
+*/
 
-/* display status */
-#display_status {
-    margin: 0.9em 0 1em 0;
-}
-
-/* button area */
 #button_area {
     margin: 0 0 0 -0.23em;
 }
-#button_connect {
-    display: inline-block;
-}
-#button_disconnect {
-    display: none;
-}
-#button_reconnect {
-    display: none;
-}
+
 #button_config {
     display: inline-block;
     margin: 0 0 0 0.75em;
 }
+
+#button_connect {
+    display: inline-block;
+}
+
+#button_disconnect {
+    display: none;
+}
+
+#button_reconnect {
+    display: none;
+}
+
 #button_save {
     display: none;
     margin: 0 0 0 0.75em;
 }
 
-/* config area */
 #config_area {
     display: none;
-    /* margin-top: 1.5em; */
-}
-#input_server {
-    margin-bottom: 0.5em;
 }
 
-/* display error */
-#display_error {
-    background: rgba(0,0,0,0.7);
-    bottom: 0;
-    color: white;
-    display: none;
-    left: 0;
-    margin: 2em 0 0 0;
-    padding: 1.5em;
-    position: absolute;
-    right: 0;
-}
-#display_error p {
-    margin: 0;
-}
-#display_error p + p {
-    margin-top: 1em;
+#content_area {
+    width: 54%;
 }
 
-/* display associate */
 #display_associate {
     background: rgba(0,0,0,0.7);
     bottom: 0;
@@ -148,9 +112,102 @@ label {
     position: absolute;
     right: 0;
 }
+
+#display_error {
+    background: rgba(0,0,0,0.7);
+    bottom: 0;
+    color: white;
+    display: none;
+    left: 0;
+    margin: 2em 0 0 0;
+    padding: 1.5em;
+    position: absolute;
+    right: 0;
+}
+
+#display_status {
+    margin: 0.9em 0 1em 0;
+}
+
+#input_server {
+    margin-bottom: 0.5em;
+}
+
+/*
+Classes
+*/
+
+/* empty */
+
+/*
+Combinations
+*/
+
+button img {
+    filter: brightness(0.65);
+    height: 49px;
+    width: 49px;
+}
+
+button:focus img,
+button:hover img {
+    filter: sepia(1) hue-rotate(163deg) saturate(5);
+}
+
 #display_associate p {
     margin: 0;
 }
+
 #display_associate p + p {
     margin-top: 1em;
 }
+
+#display_error p {
+    margin: 0;
+}
+
+#display_error p + p {
+    margin-top: 1em;
+}
+
+/*
+Form Elements
+*/
+
+input[type=text],
+input[type=number] {
+    font-size: 1.1em;
+    padding: 0.25em 0.3em;
+}
+
+input[type=text] {
+    width: 100%;
+}
+
+input[type=number] {
+    -moz-appearance: textfield;
+    width: 50%;
+}
+
+input[type=text]:focus,
+input[type=number]:focus {
+    outline: 2px solid #00AAFF;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    margin: 0;
+    -webkit-appearance: none;
+}
+
+/*
+Animations
+*/
+
+/* empty */
+
+/*
+Media Queries
+*/
+
+/* empty */

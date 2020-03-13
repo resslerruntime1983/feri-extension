@@ -3,10 +3,7 @@
   "short_name": "__MSG_extensionName__",
   "description": "__MSG_extensionDescription__",
   "background": {
-    "scripts": [
-      "js/browser-polyfill.js",
-      "js/background.js"
-    ],
+    "page": "background.html",
     "persistent": true
   },
   "icons": {
