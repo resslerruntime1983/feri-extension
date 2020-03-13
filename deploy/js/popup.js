@@ -341,10 +341,10 @@ async function partyTime() {
     await checkDebug()
 
     if (debug === false) {
-        chrome.windows.onFocusChanged.addListener(function(changedWindowID) {
+        browser.windows.onFocusChanged.addListener(function(changedWindowID) {
             if (changedWindowID !== windowID) {
                 // close this popup whenever window focus changes away from this popups parent window
-                // solves the edge case where having an open popup in one window can cause a second open poup in another window to not receive messages
+                // solves the edge case where having an open popup in one window can cause a second open popup in another window to not receive messages
                 window.close()
             }
         })
