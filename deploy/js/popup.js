@@ -55,6 +55,10 @@ const local = {
 // Functions
 //-----------
 const addListeners = local.function.addListeners = function addListeners() {
+    /*
+    Add event listeners.
+    */
+
     browser.runtime.onMessage.addListener(listenerBrowserRuntimeMessage)
 
     browser.windows.onFocusChanged.addListener(listenerBrowserWindowsFocusChanged)
@@ -72,6 +76,10 @@ const addListeners = local.function.addListeners = function addListeners() {
 } // addListeners
 
 const clearAssociate = local.function.clearAssociate = function clearAssociate() {
+    /*
+    Hide and then clear the "associate with this tab" area.
+    */
+
     local.element.displayAssociate.style.display = 'none'
 
     // loop through and remove any sub elements
@@ -81,6 +89,10 @@ const clearAssociate = local.function.clearAssociate = function clearAssociate()
 } // clearAssociate
 
 const clearError = local.function.clearError = function clearError() {
+    /*
+    Hide and then clear the error area.
+    */
+
     local.element.displayError.style.display = 'none'
 
     // loop through and remove any sub elements
@@ -90,16 +102,32 @@ const clearError = local.function.clearError = function clearError() {
 } // clearError
 
 const checkDebug = local.function.checkDebug = async function checkDebug() {
+    /*
+    Set setting.debug by sending a message to background.js asking for the current debug status.
+    */
+
     local.setting.debug = await browser.runtime.sendMessage({ action: 'debug' })
 } // checkDebug
 
 const checkStatus = local.function.checkStatus = async function checkStatus() {
+    /*
+    Send a message to background.js asking for the current status and then call setStatus() with that information.
+    */
+
     const response = await browser.runtime.sendMessage({ action: 'set_status' })
 
     setStatus(response)
 } // checkStatus
 
 const listenerBrowserRuntimeMessage = local.function.listenerBrowserRuntimeMessage = function listenerBrowserRuntimeMessage(request, sender) {
+    /*
+    Listener for browser.runtime.onMessage events.
+
+    @param  {Object}  request  Message object.
+    @param  {Object}  sender   Not used. Object with information about the sender of the message.
+        https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/runtime/MessageSender
+    */
+
     log('listenerBrowserRuntimeMessage -> request', request)
 
     setStatus(request)
@@ -108,6 +136,12 @@ const listenerBrowserRuntimeMessage = local.function.listenerBrowserRuntimeMessa
 } // listenerBrowserRuntimeMessage
 
 const listenerBrowserWindowsFocusChanged = local.function.listenerBrowserWindowsFocusChanged = function listenerBrowserWindowsFocusChanged(changedWindowID) {
+    /*
+    Listener for browser.windows.onFocusChanged events.
+
+    @param  {Number}  changedWindowID  ID of the freshly focused window.
+    */
+
     if (local.setting.debug === false) {
         if (changedWindowID !== local.setting.windowID) {
             // close this popup whenever window focus changes away from this popups parent window
@@ -118,6 +152,13 @@ const listenerBrowserWindowsFocusChanged = local.function.listenerBrowserWindows
 } // listenerBrowserWindowsFocusChanged
 
 const listenerButtonConfigClick = local.function.listenerButtonConfigClick = async function listenerButtonConfigClick(e) {
+    /*
+    Listener for element.buttonConfig click events.
+
+    @param  {Object}  e  Not used. Event object.
+        https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent
+    */
+
     clearError()
 
     if (local.element.inputServer.placeholder !== local.option.server) {
@@ -145,6 +186,13 @@ const listenerButtonConfigClick = local.function.listenerButtonConfigClick = asy
 } // listenerButtonConfigClick
 
 const listenerButtonConnectClick = local.function.listenerButtonConnectClick = async function listenerButtonConnectClick(e) {
+    /*
+    Listener for element.buttonConnect click events.
+
+    @param  {Object}  e  Not used. Event oject.
+        https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent
+    */
+
     clearError()
 
     local.element.buttonConnect.blur()
@@ -160,6 +208,13 @@ const listenerButtonConnectClick = local.function.listenerButtonConnectClick = a
 } // listenerButtonConnectClick
 
 const listenerButtonDisconnectClick = local.function.listenerButtonDisconnectClick = async function listenerButtonDisconnectClick(e) {
+    /*
+    Listener for element.buttonDisconnect click events.
+
+    @param  {Object}  e  Not used. Event object.
+        https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent
+    */
+
     clearError()
 
     local.element.buttonDisconnect.blur()
@@ -170,6 +225,13 @@ const listenerButtonDisconnectClick = local.function.listenerButtonDisconnectCli
 } // listenerButtonDisconnectClick
 
 const listenerButtonReconnectClick = local.function.listenerButtonReconnectClick = async function listenerButtonReconnectClick(e) {
+    /*
+    Listener for element.buttonReconnect click events.
+
+    @param  {Object}  e  Not used. Event object.
+        https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent
+    */
+
     clearError()
 
     local.element.buttonReconnect.blur()
@@ -185,6 +247,13 @@ const listenerButtonReconnectClick = local.function.listenerButtonReconnectClick
 } // listenerButtonReconnectClick
 
 const listenerButtonSaveClick = local.function.listenerButtonSaveClick = function listenerButtonSaveClick(e) {
+    /*
+    Listener for element.buttonSave click events.
+
+    @param  {Object}  e  Not used. Event object.
+        https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent
+    */
+
     clearError()
 
     local.element.displayStatus.textContent = browser.i18n.getMessage('configSaved')
@@ -196,12 +265,26 @@ const listenerButtonSaveClick = local.function.listenerButtonSaveClick = functio
 } // listenerButtonSaveClick
 
 const listenerInputPortInput = local.function.listenerInputPortInput = async function listenerInputPortInput(e) {
+    /*
+    Listener for element.buttonSave input events.
+
+    @param  {Object}  e  Not used. Event object.
+        https://developer.mozilla.org/en-US/docs/Web/API/InputEvent
+    */
+
     local.option.port = local.element.inputPort.value || local.element.inputPort.placeholder
 
     await storageSet({'port': local.option.port})
 } // listenerInputPortInput
 
 const listenerInputPortKeydown = local.function.listenerInputPortKeydown = function listenerInputPortKeydown(e) {
+    /*
+    Listener for element.inputPort keydown events.
+
+    @param  {Object}  e  Event object.
+        https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent
+    */
+
     if (e.key === 'Tab') {
         e.preventDefault()
         local.element.inputServer.focus()
@@ -213,18 +296,38 @@ const listenerInputPortKeydown = local.function.listenerInputPortKeydown = funct
 } // listenerInputPortKeydown
 
 const listenerInputServerInput = local.function.listenerInputServerInput = async function listenerInputServerInput(e) {
+    /*
+    Listener for element.inputServer input events.
+
+    @param  {Object}  e  Not used. Event object.
+        https://developer.mozilla.org/en-US/docs/Web/API/InputEvent
+    */
+
     local.option.server = local.element.inputServer.value.replace(/:/g, '') || local.element.inputServer.placeholder
 
     await storageSet({'server': local.option.server})
 } // listenerInputServerInput
 
 const listenerInputServerKeydown = local.function.listenerInputServerKeydown = function listenerInputServerKeydown(e) {
+    /*
+    Listener for element.inputServer keydown events.
+
+    @param  {Object}  e  Event object.
+        https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent
+    */
+
     if (e.key === 'Enter') {
         local.element.buttonSave.click()
     }
 } // listenerInputServerKeydown
 
 const setStatus = local.function.setStatus = function setStatus(obj) {
+    /*
+    Set the current status based on the status object received from the background script.
+
+    @param  {Object}  obj  Object like {action:'set_status_connected', browserTabID:1}
+    */
+
     switch(obj.action) {
         case 'set_status_connected':
             local.element.displayStatus.textContent = browser.i18n.getMessage('connected')
@@ -262,6 +365,13 @@ const setStatus = local.function.setStatus = function setStatus(obj) {
                 local.element.displayAssociate.appendChild(elementParagraph2)
 
                 document.getElementById('associate_here').addEventListener('click', async function(e) {
+                    /*
+                    Listener for click events.
+
+                    @param  {Object}  e  Event object.
+                        https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent
+                    */
+
                     e.preventDefault()
 
                     const win = await browser.windows.getCurrent()
@@ -275,6 +385,13 @@ const setStatus = local.function.setStatus = function setStatus(obj) {
                 })
 
                 document.getElementById('associate_return').addEventListener('click', function(e) {
+                    /*
+                    Listener for click events.
+
+                    @param  {Object}  e  Event object.
+                        https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent
+                    */
+
                     e.preventDefault()
                     browser.windows.update(obj.windowID, { focused: true })
                     browser.tabs.update(obj.browserTabID, { active: true })
@@ -339,6 +456,10 @@ const setStatus = local.function.setStatus = function setStatus(obj) {
 } // setStatus
 
 const start = local.function.start = async function start() {
+    /*
+    Start.
+    */
+
     addListeners()
 
     await checkDebug()
@@ -357,6 +478,13 @@ const start = local.function.start = async function start() {
 } // start
 
 const storageGet = local.function.storageGet = async function storageGet(key) {
+    /*
+    Get a value from storage by providing a named key.
+
+    @param   {String}  key  String like "server".
+    @return  {*}            Boolean, Object, Number, or String.
+    */
+
     const obj = await browser.storage.local.get(key)
     // obj can be an empty object {}
     // obj will never be undefined
@@ -364,6 +492,12 @@ const storageGet = local.function.storageGet = async function storageGet(key) {
 } // storageGet
 
 const storageSet = local.function.storageSet = async function storageSet(obj) {
+    /*
+    Save an object to storage.
+
+    @param  {Object}  obj  Object like {version:0}
+    */
+
     await browser.storage.local.set(obj)
 } // storageSet
 
