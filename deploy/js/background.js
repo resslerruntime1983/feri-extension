@@ -436,6 +436,8 @@ const setIcon = local.function.setIcon = async function setIcon(color, tabID) {
             '24':  'images/icon/icon-' + color + '-24.png',
             '32':  'images/icon/icon-' + color + '-32.png',
             '48':  'images/icon/icon-' + color + '-48.png',
+            '64':  'images/icon/icon-' + color + '-64.png',
+            '96':  'images/icon/icon-' + color + '-96.png',
             '128': 'images/icon/icon-' + color + '-128.png'
         },
         'tabId': (tabID > 0) ? tabID : null
