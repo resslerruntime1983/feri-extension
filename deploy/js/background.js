@@ -20,7 +20,16 @@ const local = {
         // extensionOff
         // extensionOn
         // fixIcons
+        // listenerPortConnect
+        // listenerPortDisconnect
+        // listenerPortMessage
+        // listenerTabsUpdated
+        // listenerWindowBeforeUnload
         // lostConnection
+        // optionsFromStorage
+        // optionToStorage
+        // portMessageAll
+        // portMessageAllExcept
         // reload
         // setBadge
         // setIcon
@@ -35,18 +44,18 @@ const local = {
         'port'  : '4000',
         'server': 'local.test'
     },
+    'port': [], // array of port objects used to communicate with other scripts
     'setting': { // settings used internally, not customizable by the user
-        'browserTabID': 0, // will be set to a positive integer once the extension is on and listening for changed files from the build tool
-        'debug': true, // Allow console logging and inspecting popups with dev tools in Chrome. Popup pages will request this variable so you only need to set it here once.
         'defaultDocument': 'index.html', // can be changed by sock.onmessage
+        'tabID': 0, // will be set to a positive integer once the extension is on and listening for changed files from the build tool
         'windowID': 0 // will be set to a positive integer once the extension is on and listening for changed files from the build tool
     },
     'sock': undefined, // will be an instance of WebSocket once a connection is attempted or connected
     'status': {
         'connectAbort': false, // can be set to true if disconnect request is received before a connection is fully established
+        'current': 'disconnected', // current or last known status
         'lastIconCustomColor': '', // will be a string like blue or pink
-        'pingAttempt': 0, // will increment every time a ping request is sent from the extension, will be reset to 0 when a pong response is received from the server
-        'setStatus': 'set_status_disconnected' // current status or last known action string sent to popup.html
+        'pingAttempt': 0 // will increment every time a ping request is sent from the extension, will be reset to 0 when a pong response is received from the server
     },
     'timer': { // setInterval and setTimeout references
         'ping': null, // will become a setInterval call to run checkConnection() every 10 seconds once a websocket is open
@@ -67,69 +76,13 @@ const addListeners = local.function.addListeners = function addListeners() {
     Add various listeners.
     */
 
-    browser.runtime.onMessage.addListener(async function(request, sender) {
-        /*
-        Listener for browser.runtime.onMessage events.
+    browser.runtime.onConnect.addListener(listenerPortConnect)
 
-        @param  {Object}  request  Message object.
-        @param  {Object}  sender   Object with information about the sender of the message.
-            https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/runtime/MessageSender
-        */
+    browser.tabs.onUpdated.addListener(listenerTabsUpdated)
 
-        log('browser.runtime.onMessage -> ', request)
+    window.addEventListener('beforeunload', listenerWindowBeforeUnload)
 
-        switch(request.action) {
-            case 'extension_on':
-                local.setting.browserTabID = request.currentTabID
-                local.setting.windowID = request.currentWindowID
-                await extensionOn()
-                return 'ok'
-                break
-            case 'extension_off':
-                local.status.connectAbort = true
-                extensionOff()
-                return Promise.resolve('ok')
-                break
-            case 'associate_tab':
-                await setIcon('', local.setting.browserTabID)
-                local.setting.browserTabID = request.currentTabID
-                local.setting.windowID = request.currentWindowID
-                await setIcon('blue', local.setting.browserTabID)
-                return Promise.resolve('ok')
-                break
-            case 'debug':
-                return Promise.resolve(local.setting.debug)
-                break
-            case 'set_status':
-                return Promise.resolve({
-                    'action': local.status.setStatus,
-                    'browserTabID': local.setting.browserTabID,
-                    'windowID': local.setting.windowID
-                })
-                break
-            default:
-                log('browser.runtime.onMessage -> unrecognized action "' + request.action + '"')
-                return Promise.resolve('ok')
-        }
-    })
-
-    browser.tabs.onUpdated.addListener(async function(tabID, changeInfo, tab) {
-        /*
-        Listener for browser.tabs.onUpdated events.
-
-        @param  {Number}  tabID       ID of the tab that was updated.
-        @param  {Object}  changeInfo  Not used. Tab properties that have changed.
-            https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs/onUpdated#changeInfo
-        @param  {Object}  tab         Not used. The new state of the tab.
-            https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs/Tab
-        */
-
-        if (tabID === local.setting.browserTabID) {
-            // re-set the colorful icon for the feri associated tab
-            log('tabs.onUpdated -> colorful icon re-set')
-            await setIcon(local.status.lastIconCustomColor, local.setting.browserTabID)
-        }
-    })
+    log('addListeners -> listeners active')
 } // addListeners
 
 const checkConnection = local.function.checkConnection = async function checkConnection() {
@@ -168,66 +121,65 @@ const connect = local.function.connect = async function connect() {
         return 'early'
     }
 
-    // read from storage or use defaults
-    local.option.server = await storageGet('server') || local.option.server
-    local.option.port = await storageGet('port') || local.option.port
-
     try {
         local.sock = new WebSocket('ws://' + local.option.server + ':' + local.option.port)
 
-        local.sock.onerror = async function (e) {
+        local.sock.onerror = async function (event) {
             /*
             Listener for websocket error events.
 
-            @param  {Object}  e  Event object.
+            @param  {Object}  event  Event object.
             */
 
-            log('sock.onerrer -> event', e)
+            log('sock.onerrer -> event', event)
 
-            local.troubleshoot = e
+            local.troubleshoot = event
+
+            clearInterval(local.timer.ping)
 
             await fixIcons() // fixes the edge case where one tab has a pink error icon and then a failed connection is made in a second tab that would turn a second icon pink
 
             connectionError()
         } // sock.onerror
 
-        local.sock.onopen = async function (e) {
+        local.sock.onopen = async function (event) {
             /*
             Listener for websocket open events.
 
-            @param  {Object}  e  Event object.
+            @param  {Object}  event  Event object.
             */
 
-            // log('sock.onopen -> event', e)
+            // log('sock.onopen -> event', event)
 
             // check connection every 10 seconds
             local.timer.ping = setInterval(checkConnection, 10000)
 
             browser.tabs.onRemoved.addListener(tabRemoved)
 
-            local.status.setStatus = 'set_status_connected'
+            local.status.current = 'connected'
 
-            try {
-                await browser.runtime.sendMessage({ action: local.status.setStatus, browserTabID: local.setting.browserTabID })
-            } catch (error) {
-                // the popup is most likely not active
-                // do nothing
-            }
+            portMessageAll({
+                'subject': 'connected',
+                'setting': local.setting,
+                'status': {
+                    'current': local.status.current
+                }
+            })
 
             await setBadge(browser.i18n.getMessage('on'))
-            await setIcon('blue', local.setting.browserTabID)
+            await setIcon('blue', local.setting.tabID)
 
             await fixIcons() // fixes the edge case where one tab has a pink error icon and then a succesful connection is made in a second tab that would turn a second icon blue
         } // sock.onopen
 
-        local.sock.onmessage = function (e) {
+        local.sock.onmessage = function (event) {
             /*
             Listener for websocket message events.
 
-            @param  {Object}  e  Event object.
+            @param  {Object}  event  Event object.
             */
 
-            let data = e.data
+            let data = event.data
 
             try {
                 data = JSON.parse(data)
@@ -275,17 +227,17 @@ const connectionError = local.function.connectionError = async function connecti
     Listener for sock.onerror events.
     */
 
-    local.status.setStatus = 'set_status_connection_error'
+    local.status.current = 'connection_error'
 
-    try {
-        await browser.runtime.sendMessage({ action: local.status.setStatus, browserTabID: local.setting.browserTabID })
-    } catch (error) {
-        // the popup is most likely not active
-        // do nothing
-    }
+    portMessageAll({
+        'subject': 'connection_error',
+        'status': {
+            'current': local.status.current
+        }
+    })
 
     await setBadge(browser.i18n.getMessage('error'))
-    await setIcon('pink', local.setting.browserTabID)
+    await setIcon('pink', local.setting.tabID)
 } // connectionError
 
 const disconnect = local.function.disconnect = async function disconnect() {
@@ -299,7 +251,7 @@ const disconnect = local.function.disconnect = async function disconnect() {
 
     browser.tabs.onRemoved.removeListener(tabRemoved)
 
-    local.status.setStatus = 'set_status_disconnected'
+    local.status.current = 'disconnected'
 
     if (typeof local.sock === 'object') {
         if (local.sock.readyState === 1 || local.sock.readyState === 0) { // open or connecting
@@ -308,7 +260,7 @@ const disconnect = local.function.disconnect = async function disconnect() {
     }
 
     await setBadge()
-    await setIcon('', local.setting.browserTabID)
+    await setIcon('', local.setting.tabID)
 } // disconnect
 
 const extensionOff = local.function.extensionOff = async function extensionOff() {
@@ -316,17 +268,20 @@ const extensionOff = local.function.extensionOff = async function extensionOff()
     Disconnect any open websocket, reset variables, and then send a notification to any open popup that the extension is now off.
     */
 
+    local.status.connectAbort = true
+
     await disconnect()
 
-    local.setting.browserTabID = 0
+    local.setting.tabID = 0
     local.setting.windowID = 0
 
-    try {
-        await browser.runtime.sendMessage({ action: local.status.setStatus, browserTabID: local.setting.browserTabID })
-    } catch (error) {
-        // the popup is most likely not active
-        // do nothing
-    }
+    portMessageAll({
+        'subject': 'disconnected',
+        'setting': local.setting,
+        'status': {
+            'current': local.status.current
+        }
+    })
 } // extensionOff
 
 const extensionOn = local.function.extensionOn = async function extensionOn() {
@@ -335,6 +290,7 @@ const extensionOn = local.function.extensionOn = async function extensionOn() {
     */
 
     local.status.connectAbort = false
+
     await connect()
 } // extensionOn
 
@@ -350,7 +306,7 @@ const fixIcons = local.function.fixIcons = async function fixIcons() {
     const tabs = await browser.tabs.query({})
 
     tabs.map(async function(tab) {
-        if (local.setting.browserTabID === tab.id) {
+        if (local.setting.tabID === tab.id) {
             // set colorful icon
             await setIcon(local.status.lastIconCustomColor, tab.id)
         } else {
@@ -360,34 +316,244 @@ const fixIcons = local.function.fixIcons = async function fixIcons() {
     })
 } // fixIcons
 
-const lostConnection = local.function.lostConnection = async function lostConnection() {
+const listenerPortConnect = local.function.listenerPortConnect = function listenerPortConnect(port) {
     /*
-    Set status.setStatus to a lost connection state, notify any open popups about the lost connection, and then set the lost badge and all icons.
+    Listener for browser.runtime.onConnect events.
+
+    @param  {Object}  port  Object with the properties onDisconnect, name, sender, onMessage, disconnect, and postMessage.
     */
 
-    local.status.setStatus = 'set_status_lost_connection'
+    log('listenerPortConnect -> port connected')
 
-    try {
-        await browser.runtime.sendMessage({ action: local.status.setStatus, browserTabID: local.setting.browserTabID })
-    } catch (error) {
-        // the popup is most likely not active
-        // do nothing
+    local.port.push(port)
+
+    port.onDisconnect.addListener(listenerPortDisconnect)
+
+    port.onMessage.addListener(listenerPortMessage)
+} // listenerPortConnect
+
+const listenerPortDisconnect = local.function.listenerPortDisconnect = function listenerPortDisconnect(port) {
+    /*
+    Listener for port.onDisconnect events.
+
+    @param  {Object}  port  Object with the properties onDisconnect, name, sender, onMessage, disconnect, and postMessage.
+    */
+
+    log('listenerPortDisconnect -> disconnected')
+
+    local.port = local.port.filter(keep => keep !== port)
+} // listenerPortDisconnect
+
+const listenerPortMessage = local.function.listenerPortMessage = async function listenerPortMessage(obj, port) {
+    /*
+    Listener for port.onMessage events.
+
+    @param  {Object}  obj   Object like {subject:'popup_init'}
+    @param  {Object}  port  Object with the properties onDisconnect, name, sender, onMessage, disconnect, and postMessage.
+    */
+
+    switch (obj.subject) {
+        case 'associate_tab':
+            log('listenerPortMessage -> associate_tab')
+
+            await setIcon('', local.setting.tabID)
+
+            local.setting.tabID = obj.tabID
+            local.setting.windowID = obj.windowID
+
+            await setIcon('blue', local.setting.tabID)
+
+            // send updated setting object to all ports except the port that messaged us
+            portMessageAllExcept(port, {
+                'subject': 'setting',
+                'setting': local.setting
+            })
+
+            break
+        case 'extension_off':
+            log('listenerPortMessage -> extension_off')
+
+            await extensionOff()
+
+            break
+        case 'extension_on':
+            log('listenerPortMessage -> extension_on')
+
+            local.setting.tabID = obj.tabID
+            local.setting.windowID = obj.windowID
+
+            await extensionOn()
+
+            break
+        case 'option_set':
+            log('listenerPortMessage -> option_set ' + obj.name + ' =', obj.value)
+
+            if (local.option[obj.name] === undefined) {
+                // this option does not exist
+                log('listenerPortMessage -> this option does not exist')
+                break
+            }
+
+            if (local.option[obj.name] === obj.value) {
+                // this option has not changed
+                log('listenerPortMessage -> this option has not changed')
+                break
+            }
+
+            // save option
+            local.option[obj.name] = obj.value
+
+            // save option to storage
+            await optionToStorage(obj.name)
+
+            // send updated option to all ports except the port that messaged us
+            portMessageAllExcept(port, {
+                'subject': 'option_set',
+                'name'   : obj.name,
+                'value'  : obj.value
+            })
+
+            if (local.status.current !== 'disconnected') {
+                if (obj.name === 'server' || obj.name === 'port') {
+                    // user is changing connection options
+                    await extensionOff()
+                }
+            }
+
+            break
+        case 'popup_init':
+            log('listenerPortMessage -> popup_init')
+
+            port.postMessage({
+                'subject': 'popup_init',
+                'option' : local.option,
+                'setting': local.setting,
+                'status' : {
+                    'current': local.status.current
+                }
+            })
+
+            break
+        default:
+            log('listenerPortMessage -> unknown obj.subject')
+            log(obj)
+
+            break
+    } // switch
+} // listenerPortMessage
+
+const listenerTabsUpdated = local.function.listenerTabsUpdated = async function listenerTabsUpdated(tabID, changeInfo, tab) {
+    /*
+    Listener for browser.tabs.onUpdated events.
+
+    @param  {Number}  tabID       ID of the tab that was updated.
+    @param  {Object}  changeInfo  Not used. Tab properties that have changed.
+        https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs/onUpdated#changeInfo
+    @param  {Object}  tab         Not used. The new state of the tab.
+        https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs/Tab
+    */
+
+    if (tabID === local.setting.tabID) {
+        // re-set the colorful icon for the feri associated tab
+        await setIcon(local.status.lastIconCustomColor, local.setting.tabID)
+
+        log('tabs.onUpdated -> colorful icon re-set')
     }
+} // listenerTabsUpdated
+
+const listenerWindowBeforeUnload = local.function.listenerWindowBeforeUnload = function listenerWindowBeforeUnload(event) {
+    /*
+    Listener for window beforeunload events.
+
+    @param  {Object}  event  Event object.
+    */
+
+    // disconnect all ports
+    // allows background.js to be reloaded in the inspector since the disconnect event will be seen by connected scripts which will then try to reconnect their port after a short delay
+    local.port.forEach(port => port.disconnect())
+} // listenerWindowBeforeUnload
+
+const lostConnection = local.function.lostConnection = async function lostConnection() {
+    /*
+    Set status.current to a lost connection state, notify any open popups about the lost connection, and then set the lost badge and all icons.
+    */
+
+    local.status.current = 'lost_connection'
+
+    portMessageAll({
+        'subject': 'lost_connection',
+        'status': {
+            'current': local.status.current
+        }
+    })
 
     await setBadge(browser.i18n.getMessage('lost'))
     await setIcon()
 } // lostConnection
+
+const optionsFromStorage = local.function.optionsFromStorage = async function optionsFromStorage() {
+    /*
+    Load local options from storage, if any.
+    */
+
+    for (const property in local.option) {
+        const storageOption = await storageGet(property)
+
+        if (storageOption !== undefined) {
+            local.option[property] = storageOption
+        }
+    } // for
+} // optionsFromStorage
+
+const optionToStorage = local.function.optionToStorage = async function optionToStorage(property) {
+    /*
+    Save a single local option to storage.
+
+    @param  {String}  property  Property name like 'port'.
+    */
+
+    await storageSet({
+        [property]: local.option[property]
+    })
+} // optionToStorage
+
+const portMessageAll = local.function.portMessageAll = function portMessageAll(obj) {
+    /*
+    Send an object to all connected ports.
+
+    @param  {Object}  obj  An object.
+    */
+
+    for (let i = 0; i < local.port.length; i++) {
+        local.port[i].postMessage(obj)
+    }
+} // portMessageAll
+
+const portMessageAllExcept = local.function.portMessageAllExcept = function portMessageAllExcept(port, obj) {
+    /*
+    Send an object to all connected ports except one.
+
+    @param  {Object}  port  A port object that should not have anything sent to it.
+    @param  {Object}  obj   An object to send.
+    */
+
+    for (let i = 0; i < local.port.length; i++) {
+        if (local.port[i] !== port) {
+            local.port[i].postMessage(obj)
+        }
+    }
+} // portMessageAllExcept
 
 const reload = local.function.reload = async function reload() {
     /*
     If Feri is associated with a tab ID, reload that tab.
     */
 
-    if (local.setting.browserTabID > 0) {
-        await browser.tabs.reload(local.setting.browserTabID, { bypassCache: true })
-        log('reload -> browserTabID ' + local.setting.browserTabID + ' reloaded')
+    if (local.setting.tabID > 0) {
+        await browser.tabs.reload(local.setting.tabID, { bypassCache: true })
+        log('reload -> tabID ' + local.setting.tabID + ' reloaded')
     } else {
-        log('reload -> browserTabID is not greater than 0')
+        log('reload -> tabID is not greater than 0')
     }
 } // reload
 
@@ -449,13 +615,7 @@ const start = local.function.start = async function start() {
     Start.
     */
 
-    // read from storage or use defaults
-    local.option.server = await storageGet('server') || local.option.server
-    local.option.port = await storageGet('port') || local.option.port
-
-    // write to storage
-    await storageSet({'server': local.option.server})
-    await storageSet({'port': local.option.port})
+    await optionsFromStorage()
 
     addListeners()
 
@@ -493,9 +653,9 @@ const tabRemoved = local.function.tabRemoved = async function tabRemoved(tabID) 
     @param {Number}  tabID  ID of the closed tab.
     */
 
-    if (local.setting.browserTabID === tabID) {
+    if (local.setting.tabID === tabID) {
         // we were associated with the tab that was just removed to kill any connections
-        local.setting.browserTabID = 0
+        local.setting.tabID = 0
         local.setting.windowID = 0
 
         await disconnect()

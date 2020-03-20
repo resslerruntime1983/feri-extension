@@ -42,10 +42,10 @@
             <hr>
 
             <label for="input_server">Extension Server</label>
-            <input id="input_server" type="text" placeholder="local.test">
+            <input type="text" is="custom-input-text" data-option="server" id="input_server" placeholder="local.test">
 
             <label for="input_port">Port</label>
-            <input id="input_port" type="number" min="1" max="65535" placeholder="4000">
+            <input type="number" is="custom-input-number" data-option="port" id="input_port" min="1" max="65535" placeholder="4000">
         </section>
 
         <div id="display_error">
