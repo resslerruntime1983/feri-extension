@@ -16,17 +16,27 @@ Deploy guide for the Feri browser extension that connects to the [Feri](https://
 
 Instructions mostly for myself but feel free to use them if you are forking this repo and plan on publishing your own extension.
 
-No matter which platform you are deploying on, make sure the `debug` setting inside `deploy/js/background.js` is set to `false`. If left on, the user's extension will spend time logging information they will never see. Even worse, the user could potentially trigger two or more popup windows which leads to an edge case where only one popup works.
+No matter which platform you are deploying on, make sure `local.setting.log` is `false` in `deploy/js/shared.js`. If left on, the extension will spend time logging information that most users will never see.
 
 ### Deploy for Chrome
 
-Edit `deploy/manifest.json` and temporarily remove the `browser_specific_settings` object which causes errors in Chrome.
+Edit `deploy/manifest.json` and temporarily remove the `browser_specific_settings` object which causes an error in Chrome.
 
 Zip up everything in the `deploy` directory and set the zip file aside for a moment.
 
 Restore `manifest.json` so it includes the previously removed `browser_specific_settings` object.
 
 Upload the zip file to the Chrome Web Store via the [Developer Dashboard](https://chrome.google.com/webstore/developer/dashboard).
+
+### Deploy for Edge
+
+Edit `deploy/manifest.json` and temporarily remove the `browser_specific_settings` object which causes an error in Edge.
+
+Zip up everything in the `deploy` directory and set the zip file aside for a moment.
+
+Restore `manifest.json` so it includes the previously removed `browser_specific_settings` object.
+
+Upload the zip file to the Microsoft Edge Addons site via the [Partner Center](https://partner.microsoft.com/en-us/dashboard/microsoftedge/overview).
 
 ### Deploy for Firefox
 

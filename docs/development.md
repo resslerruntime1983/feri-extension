@@ -16,13 +16,17 @@ Development guide for the Feri browser extension that connects to the [Feri](htt
 
 Instructions for anyone who will be working with or forking this repo.
 
-No matter which platform you are developing on, make sure the `debug` setting inside `deploy/js/background.js` is set to `true`. This will enable various console logging and in Chrome, allow you to inspect the extension popup window.
-
-**Warning:** With debug set to true, you can trigger simultaneous extension popups if you have two or more windows. This leads to an edge case where only one of the extension popups will work.
+No matter which platform you are developing on, make sure `local.setting.log` is `true` in `deploy/js/shared.js`. This will enable console logging for development.
 
 ### Development in Chrome
 
 Navigate to `chrome://extensions` and enable `developer mode`.
+
+Use `load unpacked` and select `deploy` as the extension folder.
+
+### Development in Edge
+
+Navigate to `edge://extensions/` and enable `developer mode`.
 
 Use `load unpacked` and select `deploy` as the extension folder.
 

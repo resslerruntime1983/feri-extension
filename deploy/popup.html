@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <link rel="stylesheet" href="css/popup.css">
+    <link rel="stylesheet" href="/css/popup.css?version=2020.3.21">
 </head>
 <body>
 
@@ -18,23 +18,23 @@
 
         <section id="button_area">
             <button id="button_connect">
-                <img src="/images/button-connect.svg" alt="Connect" title="Connect">
+                <img src="/images/button-connect.svg?version=2020.3.21" alt="Connect" title="Connect">
             </button>
 
             <button id="button_disconnect">
-                <img src="/images/button-disconnect.svg" alt="Disconnect" title="Disconnect">
+                <img src="/images/button-disconnect.svg?version=2020.3.21" alt="Disconnect" title="Disconnect">
             </button>
 
             <button id="button_reconnect">
-                <img src="/images/button-connect.svg" alt="Reconnect" title="Reconnect">
+                <img src="/images/button-connect.svg?version=2020.3.21" alt="Reconnect" title="Reconnect">
             </button>
 
             <button id="button_save">
-                <img src="/images/button-save.svg" alt="Save" title="Save">
+                <img src="/images/button-save.svg?version=2020.3.21" alt="Save" title="Save">
             </button>
 
             <button id="button_config">
-                <img src="/images/button-config.svg" alt="Config" title="Config">
+                <img src="/images/button-config.svg?version=2020.3.21" alt="Config" title="Config">
             </button>
         </section>
 
@@ -42,10 +42,10 @@
             <hr>
 
             <label for="input_server">Extension Server</label>
-            <input id="input_server" type="text" placeholder="local.test">
+            <input type="text" is="custom-input-text" data-option="server" id="input_server" placeholder="local.test">
 
             <label for="input_port">Port</label>
-            <input id="input_port" type="number" min="1" max="65535" placeholder="4000">
+            <input type="number" is="custom-input-number" data-option="port" id="input_port" min="1" max="65535" placeholder="4000">
         </section>
 
         <div id="display_error">
@@ -57,8 +57,9 @@
         </div>
     </div><!-- content_area -->
 
-    <script src="js/browser-polyfill.js"></script>
-    <script src="js/popup.js"></script>
+    <script src="/js/browser-polyfill.js?version=2020.3.21"></script>
+    <script src="/js/shared.js?version=2020.3.21"></script>
+    <script src="/js/popup.js?version=2020.3.21"></script>
 
 </body>
 </html>
