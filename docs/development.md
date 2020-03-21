@@ -24,6 +24,12 @@ Navigate to `chrome://extensions` and enable `developer mode`.
 
 Use `load unpacked` and select `deploy` as the extension folder.
 
+### Development in Edge
+
+Navigate to `edge://extensions/` and enable `developer mode`.
+
+Use `load unpacked` and select `deploy` as the extension folder.
+
 ### Development in Firefox
 
 Navigate to `about:debugging` and enable `add-on debugging`.

@@ -20,13 +20,23 @@ No matter which platform you are deploying on, make sure `local.setting.log` is 
 
 ### Deploy for Chrome
 
-Edit `deploy/manifest.json` and temporarily remove the `browser_specific_settings` object which causes errors in Chrome.
+Edit `deploy/manifest.json` and temporarily remove the `browser_specific_settings` object which causes an error in Chrome.
 
 Zip up everything in the `deploy` directory and set the zip file aside for a moment.
 
 Restore `manifest.json` so it includes the previously removed `browser_specific_settings` object.
 
 Upload the zip file to the Chrome Web Store via the [Developer Dashboard](https://chrome.google.com/webstore/developer/dashboard).
+
+### Deploy for Edge
+
+Edit `deploy/manifest.json` and temporarily remove the `browser_specific_settings` object which causes an error in Edge.
+
+Zip up everything in the `deploy` directory and set the zip file aside for a moment.
+
+Restore `manifest.json` so it includes the previously removed `browser_specific_settings` object.
+
+Upload the zip file to the Microsoft Edge Addons site via the [Partner Center](https://partner.microsoft.com/en-us/dashboard/microsoftedge/overview).
 
 ### Deploy for Firefox
 
