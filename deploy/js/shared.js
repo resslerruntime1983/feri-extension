@@ -15,7 +15,7 @@ const shared = {
         // log
     },
     'setting': { // settings used internally, not customizable by the user
-        'log': true // verbose logging for development, make sure this is false when publishing for end users
+        'log': false // verbose logging for development, make sure this is false when publishing for end users
     }
 } // shared
 
