@@ -25,7 +25,7 @@ Advanced features like CSS hot reloading and smart reloading are being considere
 
 For Chrome, install via the `Feri` page on the [Chrome Web Store](https://chrome.google.com/webstore/detail/feri/ffigcfdeggacicelkoebefekgadgcibn).
 
-For Edge, install via the `Feri` page on the [Microsoft Edge Addons](https://microsoftedge.microsoft.com/addons/detail/...) site.
+For Edge, install via the `Feri` page on the Microsoft Edge Addons site once it is approved by an extension reviewer. Currently pending review as of March 21, 2020.
 
 For Firefox, install via the `Feri` page on the [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/feri/) site.
 
