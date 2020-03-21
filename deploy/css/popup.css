@@ -176,8 +176,9 @@ Form Elements
 
 input[type=text],
 input[type=number] {
-    font-size: 1.1em;
-    padding: 0.25em 0.3em;
+    border: 1px solid #aaa;
+    font-size: 15px;
+    padding: 6px 7px;
 }
 
 input[type=text] {
