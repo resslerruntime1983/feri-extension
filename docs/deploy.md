@@ -20,29 +20,34 @@ No matter which platform you are deploying on, make sure `local.setting.log` is 
 
 ### Deploy for Chrome
 
-Edit `deploy/manifest.json` and temporarily remove the `browser_specific_settings` object which causes an error in Chrome.
-
-Zip up everything in the `deploy` directory and set the zip file aside for a moment.
-
-Restore `manifest.json` so it includes the previously removed `browser_specific_settings` object.
+Zip up everything in the `deploy` directory.
 
 Upload the zip file to the Chrome Web Store via the [Developer Dashboard](https://chrome.google.com/webstore/developer/dashboard).
 
 ### Deploy for Edge
 
-Edit `deploy/manifest.json` and temporarily remove the `browser_specific_settings` object which causes an error in Edge.
-
-Zip up everything in the `deploy` directory and set the zip file aside for a moment.
-
-Restore `manifest.json` so it includes the previously removed `browser_specific_settings` object.
+Zip up everything in the `deploy` directory.
 
 Upload the zip file to the Microsoft Edge Addons site via the [Partner Center](https://partner.microsoft.com/en-us/dashboard/microsoftedge/overview).
 
 ### Deploy for Firefox
 
-Check `deploy/manifest.json` and make sure the `browser_specific_settings` > `gecko` > `id` string is related to the add-on developer account you will be using.
+Edit `deploy/manifest.json` and temporarily add the following object before the `permissions` object.
 
-Zip up everything in the `deploy` directory.
+```
+"browser_specific_settings": {
+    "gecko": {
+        "id": "feri@knightmode.addons.mozilla.org",
+        "strict_min_version": "68.0"
+    }
+},
+```
+
+Make sure the `browser_specific_settings` > `gecko` > `id` string is related to the add-on developer account you will be using.
+
+Zip up everything in the `deploy` directory and set the zip file aside for a moment.
+
+Restore `deploy/manifest.json` to its default state, without the `browser_specific_settings` object.
 
 Upload the zip file to the Firefox Add-ons site via the [Developer Hub](https://addons.mozilla.org/en-US/developers/addons).
 
