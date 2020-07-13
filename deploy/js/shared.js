@@ -12,6 +12,7 @@
 //-----------
 const shared = {
     'function': { // will hold various functions
+        // delay
         // log
     },
     'setting': { // settings used internally, not customizable by the user
@@ -22,6 +23,17 @@ const shared = {
 //-----------
 // Functions
 //-----------
+const delay = shared.function.delay = function delay(ms) {
+    /*
+    Promise that will delay the desired number of milliseconds before resolving.
+
+    @param   {Number}   ms  Number of milliseconds to delay.
+    @return  {Promise}
+    */
+
+    return new Promise(resolve => setTimeout(resolve, ms))
+} // delay
+
 const log = shared.function.log = function log(...any) {
     /*
     Log to the console, if allowed.
