@@ -31,6 +31,9 @@ const local = {
         // portMessageAll
         // portMessageAllExcept
         // reload
+        // reloadResume
+        // reloadResumeFinal
+        // resetMostSettings
         // setBadge
         // setIcon
         // start
@@ -47,7 +50,18 @@ const local = {
     'port': [], // array of port objects used to communicate with other scripts
     'setting': { // settings used internally, not customizable by the user
         'defaultDocument': 'index.html', // can be changed by sock.onmessage
+        'reloadRequest': 0, // will be incremented by one for each reload request that comes in during an active reload
+        'scrollAfterReload': false, // will be set to true if a document should scroll to its last known scroll offset after a reload
+        'scrollError': {
+            'scrollLeft': 0, // last known left scroll offset for a document that scrolling could not be restored for
+            'scrollTop': 0, // last known top scroll offset for a document that scrolling could not be restored for
+            'tabURL': '' // can be set to an URL by reloadResumeFinal() if a scrollRestoration setting for a document could not be restored to "auto"
+        },
+        'scrollLeft': 0, // last known left scroll offset of a document in pixels, relayed from "reload-before.js" before a tab reloads
+        'scrollRestoration': 'auto', // last known scroll restoration setting of a document, relayed from "reload-before.js" before a tab reloads
+        'scrollTop': 0, // last known top scroll offset of a document in pixels, relayed from 'reload-before.js' before a tab reloads
         'tabID': 0, // will be set to a positive integer once the extension is on and listening for changed files from the build tool
+        'tabURL': '', // will be set to the URL of a tab by listenerTabsUpdated()
         'windowID': 0 // will be set to a positive integer once the extension is on and listening for changed files from the build tool
     },
     'sock': undefined, // will be an instance of WebSocket once a connection is attempted or connected
@@ -92,7 +106,7 @@ const checkConnection = local.function.checkConnection = async function checkCon
 
     if (local.status.pingAttempt >= 3) {
         log('checkConnection -> three or more ping attempts failed')
-        await disconnect()
+        await disconnect() // disconnect also resets most local.setting properties to default values
         await lostConnection()
     } else {
         if (local.sock.readyState === 1) { // open
@@ -101,7 +115,7 @@ const checkConnection = local.function.checkConnection = async function checkCon
         } else {
             // websocket is no longer open
             log('checkConnection -> websocket is no longer open')
-            await disconnect()
+            await disconnect() // disconnect also resets most local.setting properties to default values
             await lostConnection()
         }
     }
@@ -113,7 +127,7 @@ const connect = local.function.connect = async function connect() {
     */
 
     // try to disconnect first
-    await disconnect()
+    await disconnect() // disconnect also resets most local.setting properties to default values
 
     if (local.status.connectAbort === true) {
         // we received a disconnect request before a connect could fully establish
@@ -131,7 +145,7 @@ const connect = local.function.connect = async function connect() {
             @param  {Object}  event  Event object.
             */
 
-            log('sock.onerrer -> event', event)
+            log('websocket -> on error', event)
 
             local.troubleshoot = event
 
@@ -149,7 +163,7 @@ const connect = local.function.connect = async function connect() {
             @param  {Object}  event  Event object.
             */
 
-            // log('sock.onopen -> event', event)
+            // log('websocket -> on open', event)
 
             // check connection every 10 seconds
             local.timer.ping = setInterval(checkConnection, 10000)
@@ -199,7 +213,7 @@ const connect = local.function.connect = async function connect() {
             // any files built?
             if (data.hasOwnProperty('files')) {
                 if (Array.isArray(data.files)) {
-                    log('sock.onmessage -> reload')
+                    log('websocket -> reload')
                     reload()
                 }
             }
@@ -213,11 +227,11 @@ const connect = local.function.connect = async function connect() {
                     local.status.pingAttempt = 0 // reset to 0
                 }
             } else {
-                log('sock.onmessage ->', data)
+                log('websocket -> data', data)
             }
         } // sock.onmessage
     } catch (error) {
-        log('try catch')
+        log('websocket -> error', error)
         connectionError()
     }
 } // connect
@@ -247,6 +261,8 @@ const disconnect = local.function.disconnect = async function disconnect() {
 
     clearInterval(local.timer.ping)
 
+    resetMostSettings() // resets all local.setting properties except for defaultDocument, tabID, and windowID
+
     local.status.pingAttempt = 0 // reset to 0
 
     browser.tabs.onRemoved.removeListener(tabRemoved)
@@ -270,7 +286,7 @@ const extensionOff = local.function.extensionOff = async function extensionOff()
 
     local.status.connectAbort = true
 
-    await disconnect()
+    await disconnect() // disconnect also resets most local.setting properties to default values
 
     local.setting.tabID = 0
     local.setting.windowID = 0
@@ -323,7 +339,7 @@ const listenerPortConnect = local.function.listenerPortConnect = function listen
     @param  {Object}  port  Object with the properties onDisconnect, name, sender, onMessage, disconnect, and postMessage.
     */
 
-    log('listenerPortConnect -> port connected')
+    log('listenerPortConnect -> connected', port.name)
 
     local.port.push(port)
 
@@ -339,7 +355,7 @@ const listenerPortDisconnect = local.function.listenerPortDisconnect = function 
     @param  {Object}  port  Object with the properties onDisconnect, name, sender, onMessage, disconnect, and postMessage.
     */
 
-    log('listenerPortDisconnect -> disconnected')
+    log('listenerPortDisconnect -> disconnected', port.name)
 
     local.port = local.port.filter(keep => keep !== port)
 } // listenerPortDisconnect
@@ -356,11 +372,14 @@ const listenerPortMessage = local.function.listenerPortMessage = async function 
         case 'associate_tab':
             log('listenerPortMessage -> associate_tab')
 
-            await setIcon('', local.setting.tabID)
+            const previousTabID = local.setting.tabID
+
+            resetMostSettings() // resets all local.setting properties except for defaultDocument, tabID, and windowID
 
             local.setting.tabID = obj.tabID
             local.setting.windowID = obj.windowID
 
+            await setIcon('', previousTabID)
             await setIcon('blue', local.setting.tabID)
 
             // send updated setting object to all ports except the port that messaged us
@@ -434,6 +453,49 @@ const listenerPortMessage = local.function.listenerPortMessage = async function 
             })
 
             break
+        case 'reload_after':
+            log('listenerPortMessage -> reload_after', obj)
+
+            try {
+                port.postMessage({
+                    'subject': 'reload_after',
+                    'scrollError': local.setting.scrollError, // an object with sub properties
+                    'scrollLeft': local.setting.scrollLeft,
+                    'scrollRestoration': local.setting.scrollRestoration,
+                    'scrollTop': local.setting.scrollTop,
+                    'tabURL': local.setting.tabURL
+                })
+
+                if (local.setting.scrollError.tabURL === local.setting.tabURL) {
+                    // reset error settings since the content script has been messaged
+                    local.setting.scrollError = {
+                        scrollLeft: 0,
+                        scrollTop: 0,
+                        tabURL: ''
+                    }
+                } // if
+            } catch (error) {
+                log('listenerPortMessage -> reload_after -> error', error)
+            } // catch
+
+            break
+        case 'reload_before':
+            log('listenerPortMessage -> reload_before', obj)
+
+            local.setting.scrollLeft = Math.abs(parseInt(obj.scrollLeft, 10)) || 0
+            local.setting.scrollTop = Math.abs(parseInt(obj.scrollTop, 10)) || 0
+
+            local.setting.scrollRestoration = (obj.scrollRestoration === 'manual') ? 'manual' : 'auto'
+
+            if (local.setting.scrollRestoration === 'auto' && (local.setting.scrollLeft > 0 || local.setting.scrollTop > 0)) {
+                local.setting.scrollAfterReload = true
+            } else {
+                local.setting.scrollAfterReload = false
+            }
+
+            await reloadResume()
+
+            break
         default:
             log('listenerPortMessage -> unknown obj.subject')
             log(obj)
@@ -447,9 +509,9 @@ const listenerTabsUpdated = local.function.listenerTabsUpdated = async function 
     Listener for browser.tabs.onUpdated events.
 
     @param  {Number}  tabID       ID of the tab that was updated.
-    @param  {Object}  changeInfo  Not used. Tab properties that have changed.
+    @param  {Object}  changeInfo  Tab properties that have changed.
         https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs/onUpdated#changeInfo
-    @param  {Object}  tab         Not used. The new state of the tab.
+    @param  {Object}  tab         The new state of the tab.
         https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs/Tab
     */
 
@@ -457,8 +519,65 @@ const listenerTabsUpdated = local.function.listenerTabsUpdated = async function 
         // re-set the colorful icon for the feri associated tab
         await setIcon(local.status.lastIconCustomColor, local.setting.tabID)
 
-        log('tabs.onUpdated -> colorful icon re-set')
-    }
+        log('listenerTabsUpdated -> colorful icon re-set')
+
+        if (typeof tab.url === 'string') {
+            local.setting.tabURL = tab.url
+        }
+
+        if (changeInfo.status === 'complete') {
+            if (local.setting.scrollError.tabURL !== '') {
+                if (local.setting.scrollError.tabURL !== local.setting.tabURL) {
+                    // we have navigated to a new page that is no longer the error URL
+
+                    if (local.setting.scrollError.scrollLeft > 0 || local.setting.scrollError.scrollTop > 0) {
+                        // reset the scrollError scrollLeft and scrollTop settings which should no longer be restored
+                        local.setting.scrollError.scrollLeft = 0
+                        local.setting.scrollError.scrollTop = 0
+
+                        log('listenerTabsUpdated -> reset scrollError scrollLeft and scrollTop which should no longer be restored since the URL changed')
+                    }
+                } else {
+                    // scrollError.tabURL === tabURL
+
+                    // try to set scrollRestoration back to "auto"
+                    try {
+                        // log('listenerTabsUpdated -> trying to set scrollRestoration back to "auto"')
+
+                        await browser.tabs.executeScript(local.setting.tabID, {
+                            file: '/js/reload-after.js'
+                        })
+
+                        // set scrollAfterReload to false since we already allowed the document to restore scrolling by executing "reload-after.js" above
+                        local.setting.scrollAfterReload = false
+                    } catch (error) {
+                        log('listenerTabsUpdated -> error', error)
+                        // the most likely cause for an error here is trying to executeScript into a page that is not currently available due to a network connection or server issue
+                        // we can try to fix the error again the next time a "complete" event happens for this tabURL
+                    } // catch
+                } // if
+            } // if
+
+            // scroll after reload
+            if (local.setting.scrollAfterReload === true) {
+                local.setting.scrollAfterReload = false
+
+                await reloadResumeFinal()
+            }
+
+            // reload request
+            if (local.setting.reloadRequest > 1) {
+                local.setting.reloadRequest = 0
+
+                log('listenerTabsUpdated -> pending reload requests, calling reload()')
+
+                // initiate exactly one reload for the one or more reload requests that came in while we were working on the previous reload request
+                await reload()
+            } else {
+                local.setting.reloadRequest = 0
+            }
+        } // if changeInfo.status
+    } // if tabID
 } // listenerTabsUpdated
 
 const listenerWindowBeforeUnload = local.function.listenerWindowBeforeUnload = function listenerWindowBeforeUnload(event) {
@@ -546,16 +665,107 @@ const portMessageAllExcept = local.function.portMessageAllExcept = function port
 
 const reload = local.function.reload = async function reload() {
     /*
-    If Feri is associated with a tab ID, reload that tab.
+    If Feri is associated with a tab ID, initiate a reload of that tab.
     */
 
     if (local.setting.tabID > 0) {
-        await browser.tabs.reload(local.setting.tabID, { bypassCache: true })
-        log('reload -> tabID ' + local.setting.tabID + ' reloaded')
+        log('reload -> reload requested for tabID', local.setting.tabID)
+
+        // increment reloadRequest so we can detect if more than one reload request comes in while we are working on a single reload request
+        local.setting.reloadRequest += 1
+
+        if (local.setting.reloadRequest > 1) {
+            // do nothing since listenerTabsUpdated() will call reload() again once it is done working on a single reload request
+            return 'early'
+        } // if
+
+        try {
+            // get scrollLeft, scrollRestoration, and scrollTop values
+            await browser.tabs.executeScript(local.setting.tabID, {
+                file: '/js/reload-before.js'
+            })
+
+            // reloading will resume in reloadResume() once we receive a message from the "reload-before.js" content script
+        } catch (error) {
+            // the most likely cause for an error here is trying to executeScript into a protected page like "chrome-extension://..." where content scripts are not allowed
+            log('reload -> error', error)
+            log('reload -> could not retrieve scrollLeft, scrollRestoration, or scrollTop')
+            log('reload -> doing a simple reload')
+
+            await browser.tabs.reload(local.setting.tabID, { bypassCache: true })
+        } // catch
     } else {
         log('reload -> tabID is not greater than 0')
     }
 } // reload
+
+const reloadResume = local.function.reloadResume = async function reloadResume() {
+    /*
+    If Feri is associated with a tab ID, resume a reload of that tab.
+    */
+
+    if (local.setting.tabID > 0) {
+        // chrome returns nearly instantly from the following await, and not after the tab is done reloading like you might think
+        await browser.tabs.reload(local.setting.tabID, { bypassCache: true })
+
+        // reloading will resume in reloadResumeFinal() once a tabs.onUpdated event with a status of "complete" happens
+    } else {
+        log('reloadResume -> tabID is not greater than 0')
+    }
+} // reloadResume
+
+const reloadResumeFinal = local.function.reloadResumeFinal = async function reloadResumeFinal() {
+    /*
+    If Feri is associated with a tab ID, finalize a reload of that tab.
+    */
+
+    if (local.setting.tabID > 0) {
+        // In the case where a scrollRestoration value was "auto", then set to "manual", and then the script below crashes or never runs, that one affected page will keep its "manual" setting. Eventually that page will revert to its natural "auto" setting once navigated to again or navigated to in a fresh tab.
+
+        if (local.setting.scrollRestoration === 'auto' && (local.setting.scrollLeft > 0 || local.setting.scrollTop > 0)) {
+            // restore scrollLeft, scrollRestoration, and scrollTop values
+
+            try {
+                await browser.tabs.executeScript(local.setting.tabID, {
+                    file: '/js/reload-after.js'
+                })
+            } catch (error) {
+                log('reloadResumeFinal -> error', error)
+                // the most likely cause for an error here is trying to executeScript into a page that is not currently available due to a network connection or server issue
+
+                // set error settings for possible future use
+                local.setting.scrollError = {
+                    scrollLeft: local.setting.scrollLeft,
+                    scrollTop: local.setting.scrollTop,
+                    tabURL: local.setting.tabURL
+                }
+            } // catch
+        } // if
+    } else {
+        log('reloadResumeFinal -> tabID is not greater than 0')
+    }
+} // reloadResumeFinal
+
+const resetMostSettings = local.function.resetMostSettings = function resetMostSettings() {
+    /*
+    Reset most settings to default values.
+    */
+
+    // leave defaultDocument as is
+    local.setting.reloadRequest = 0
+    local.setting.scrollAfterReload = false
+    local.setting.scrollError = {
+        scrollLeft: 0,
+        scrollTop: 0,
+        tabURL: ''
+    }
+    local.setting.scrollLeft = 0
+    local.setting.scrollRestoration = 'auto'
+    local.setting.scrollTop = 0
+    // leave tabID as is
+    local.setting.tabURL = ''
+    // leave windowID as is
+} // resetMostSettings
 
 const setBadge = local.function.setBadge = async function setBadge(text) {
     /*
@@ -654,11 +864,11 @@ const tabRemoved = local.function.tabRemoved = async function tabRemoved(tabID) 
     */
 
     if (local.setting.tabID === tabID) {
-        // we were associated with the tab that was just removed to kill any connections
+        // we were associated with the tab that was just removed
         local.setting.tabID = 0
         local.setting.windowID = 0
 
-        await disconnect()
+        await disconnect() // disconnect also resets most local.setting properties to default values
 
         log('tabRemoved -> disconnected')
     } else {

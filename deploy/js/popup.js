@@ -446,7 +446,7 @@ const portConnect = local.function.portConnect = function portConnect() {
     Connect a port to the background script.
     */
 
-    local.port = browser.runtime.connect()
+    local.port = browser.runtime.connect({ name: 'popup' })
 } // portConnect
 
 const portListeners = local.function.portListeners = function portListeners() {
