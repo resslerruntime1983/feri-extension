@@ -27,6 +27,7 @@ const local = {
         // listenerWindowBeforeUnload
         // lostConnection
         // optionsFromStorage
+        // optionsToStorage
         // optionToStorage
         // portMessageAll
         // portMessageAllExcept
@@ -40,6 +41,7 @@ const local = {
         // storageGet
         // storageSet
         // tabRemoved
+        // test
         // themeCheck
         // themeMonitor
     },
@@ -70,6 +72,22 @@ const local = {
         'current': 'disconnected', // current or last known status
         'lastIconCustomColor': '', // will be a string like blue or pink
         'pingAttempt': 0 // will increment every time a ping request is sent from the extension, will be reset to 0 when a pong response is received from the server
+    },
+    'test': { // functions which will be populated by "background-test.js" once "await test()" is run
+        // functions
+        // function * (tests for various functions under local.function)
+        // option
+        // port
+        // setting
+        // sharedFunction (test for shared.function)
+        // sharedFunction * (tests for various functions under shared.function)
+        // sharedSetting (test for shared.setting)
+        // sock
+        // status
+        // test
+        // timer
+        // theme
+        // troubleshoot
     },
     'timer': { // setInterval and setTimeout references
         'ping': null, // will become a setInterval call to run checkConnection() every 10 seconds once a websocket is open
@@ -109,7 +127,7 @@ const checkConnection = local.function.checkConnection = async function checkCon
         await disconnect() // disconnect also resets most local.setting properties to default values
         await lostConnection()
     } else {
-        if (local.sock.readyState === 1) { // open
+        if (local.sock && local.sock.readyState === 1) { // open
             local.status.pingAttempt += 1
             local.sock.send("ping")
         } else {
@@ -153,7 +171,7 @@ const connect = local.function.connect = async function connect() {
 
             await fixIcons() // fixes the edge case where one tab has a pink error icon and then a failed connection is made in a second tab that would turn a second icon pink
 
-            connectionError()
+            await connectionError()
         } // sock.onerror
 
         local.sock.onopen = async function (event) {
@@ -186,7 +204,7 @@ const connect = local.function.connect = async function connect() {
             await fixIcons() // fixes the edge case where one tab has a pink error icon and then a succesful connection is made in a second tab that would turn a second icon blue
         } // sock.onopen
 
-        local.sock.onmessage = function (event) {
+        local.sock.onmessage = async function (event) {
             /*
             Listener for websocket message events.
 
@@ -207,14 +225,14 @@ const connect = local.function.connect = async function connect() {
                     if (data.defaultDocument.trim().length >= 3) {
                         local.setting.defaultDocument = data.defaultDocument.trim()
                     }
-                }
-            }
+                } // if
+            } // if
 
             // any files built?
             if (data.hasOwnProperty('files')) {
                 if (Array.isArray(data.files)) {
                     log('websocket -> reload')
-                    reload()
+                    await reload()
                 }
             }
 
@@ -232,7 +250,7 @@ const connect = local.function.connect = async function connect() {
         } // sock.onmessage
     } catch (error) {
         log('websocket -> error', error)
-        connectionError()
+        await connectionError()
     }
 } // connect
 
@@ -624,6 +642,18 @@ const optionsFromStorage = local.function.optionsFromStorage = async function op
     } // for
 } // optionsFromStorage
 
+const optionsToStorage = local.function.optionsToStorage = async function optionsToStorage(property) {
+    /*
+    Save all local options to storage.
+
+    @param  {String}  property  Property name like 'port'.
+    */
+
+    for (const property in local.option) {
+        await optionToStorage(property)
+    } // for
+} // optionsToStorage
+
 const optionToStorage = local.function.optionToStorage = async function optionToStorage(property) {
     /*
     Save a single local option to storage.
@@ -825,7 +855,10 @@ const start = local.function.start = async function start() {
     Start.
     */
 
-    await optionsFromStorage()
+    await optionsFromStorage() // 0, 1, or more options may come from storage
+
+    // save all options to disk for next time
+    await optionsToStorage()
 
     addListeners()
 
@@ -875,6 +908,49 @@ const tabRemoved = local.function.tabRemoved = async function tabRemoved(tabID) 
         log('tabRemoved -> nothing to do')
     }
 } // tabRemoved
+
+const test = local.function.test = async function test() {
+    /*
+    Run all tests.
+
+    Note: Testing functions will be added to our local.test object once "background-test.js" is lazy loaded by this function.
+    */
+
+    let numberOfTests = Object.keys(local.test).length
+
+    if (numberOfTests === 0) {
+        // lazy load tests from 'background-test.js'
+
+        await new Promise(function(resolve, reject) {
+            const script = document.createElement('script')
+
+            document.getElementsByTagName('head')[0].appendChild(script)
+
+            script.onload = function() {
+                resolve()
+            }
+
+            script.src = '/js/background-test.js'
+        })
+
+        numberOfTests = Object.keys(local.test).length
+    } // if
+
+    try {
+        for (const property in local.test) {
+            try {
+                await local.test[property]()
+            } catch (error) {
+                console.warn('test -> error in local.test.' + property)
+                throw error
+            }
+        } // for
+
+        console.log('test -> all ' + numberOfTests + ' tests passed')
+    } catch (error) {
+        console.error(error)
+    }
+} // test
 
 const themeCheck = local.function.themeCheck = async function themeCheck() {
     /*

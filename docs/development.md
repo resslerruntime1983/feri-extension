@@ -18,6 +18,12 @@ Instructions for anyone who will be working with or forking this repo.
 
 No matter which platform you are developing on, make sure `local.setting.log` is `true` in `deploy/js/shared.js`. This will enable console logging for development.
 
+As you develop, you may want to run a suite of tests to make sure everything is working as intended. The suite of tests can be run by entering `await test()` in the console of the background page. The Feri build tool will need to be running and reachable in order for tests to pass.
+
+You will probably want to add or modify tests from time to time too. Each test can be found in `deploy/js/background-test.js`. Keep in mind that tests are only focused on scripts used by the background page, namely `deploy/js/background.js` and `deploy/js/shared.js`.
+
+The test suite is no replacement for human testing of course.
+
 ### Development in Chrome
 
 Navigate to `chrome://extensions` and enable `developer mode`.
