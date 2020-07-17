@@ -52,6 +52,8 @@ local.test.functionConnect = async function testFunctionConnect() {
         local.troubleshoot = null
 
         await connect()
+
+        await delay(1000) // wait one second for things to settle and to let any initial messages finish transmitting
     } catch (error) {
         throw error
     }
@@ -63,8 +65,6 @@ local.test.functionConnectionError = async function testFunctionConnectionError(
     */
 
     try {
-        await delay(500) // delay for firefox which does not always like an immediate connectionError() after calling connect()
-
         await connectionError()
     } catch (error) {
         throw error
@@ -102,6 +102,8 @@ local.test.functionExtensionOn = async function testFunctionExtensionOn() {
 
     try {
         await extensionOn()
+
+        await delay(1000) // wait one second for things to settle and to let any initial messages finish transmitting
     } catch (error) {
         throw error
     }
@@ -155,9 +157,10 @@ local.test.functionLostConnection = async function testFunctionLostConnection() 
     */
 
     try {
+        await disconnect()
         await lostConnection()
 
-        // disconnect to clear the lost connection status
+        // disconnect again to clear the lost connection status and also reset the badge icon and badge text
         await disconnect()
     } catch (error) {
         throw error
