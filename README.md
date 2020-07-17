@@ -29,6 +29,8 @@ For Edge, install via the `Feri` page on the [Microsoft Edge Addons](https://mic
 
 For Firefox, install via the `Feri` page on the [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/feri/) site.
 
+Unofficially, `Feri` also works well on Brave, Opera, and in theory, all Chromium based browsers.
+
 ## Usage
 
 Visit the [usage guide](docs/usage.md#usage) for more info.
