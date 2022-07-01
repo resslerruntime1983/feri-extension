@@ -13,7 +13,7 @@ A web browser extension that connects to the [Feri](https://github.com/nightmode
 * [Development](docs/development.md#development)
 * [Deploy](docs/deploy.md#deploy)
 * [Thanks](#thanks)
-* [Support](#support)
+* [Donate](#donate)
 
 ## Overview
 
@@ -47,14 +47,9 @@ Visit the [deploy guide](docs/deploy.md#deploy) for more info.
 
 Thanks to [Font Awesome](https://fontawesome.com/license) for providing the icons used for this project. Icons were modified slightly during development so you may want to refer to the [original icons](https://fontawesome.com/icons?d=gallery) for your own use.
 
-## Support
+## Donate
 
-Help [support this project](https://www.patreon.com/nightmode) on Patreon. Help me caretake and craft new software, videos, and interactive art. All for as little as $1 a month.
-
-In addition to Patreon, here are some other ways you can help this project.
-
-* [Report any issues](https://github.com/nightmode/feri-extension/issues) on GitHub.
-* Language Translations.
+Buy me [Bubble Tea](https://ko-fi.com/kai_nightmode). Support my work and get the ability to send me private messages on Ko-fi. ^_^
 
 ## License
 
